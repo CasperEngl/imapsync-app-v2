@@ -1,4 +1,5 @@
 import { useSelector } from "@xstate/store/react";
+import { ArrowRightLeft } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -129,12 +130,17 @@ export function App() {
         toast(`Imported transfer`, {
           description: (
             <div className="flex flex-col gap-1">
-              <div>
-                <strong>{sourceUser}</strong> from <strong>{sourceHost}</strong>
+              <div className="text-xs text-muted-foreground">Source</div>
+              <div className="flex gap-1 items-center text-sm">
+                <span className="font-medium">{sourceUser}</span>
+                <ArrowRightLeft className="size-4 text-muted-foreground/50"></ArrowRightLeft>
+                <span className="font-medium">{sourceHost}</span>
               </div>
-              <div>↓</div>
-              <div>
-                <strong>{destUser}</strong> from <strong>{destHost}</strong>
+              <div className="text-xs text-muted-foreground">Destination</div>
+              <div className="flex gap-1 items-center text-sm">
+                <span className="font-medium">{destUser}</span>
+                <ArrowRightLeft className="size-4 text-muted-foreground/50"></ArrowRightLeft>
+                <span className="font-medium">{destHost}</span>
               </div>
             </div>
           ),
@@ -157,20 +163,22 @@ export function App() {
 
   return (
     <Providers>
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold">IMAP Sync App</h1>
-          <div className="flex items-center gap-2">
-            <Badge variant={isDemoMode ? "warning" : "destructive"} size="lg">
-              {isDemoMode ? "Demo Mode" : "Live Mode"}
-            </Badge>
+      <div className="relative">
+        <header className="sticky top-0 bg-white shadow py-4">
+          <div className="container mx-auto flex justify-between items-center">
+            <h1 className="text-3xl font-bold">IMAP Sync App</h1>
+            <div className="flex items-center gap-2">
+              <Badge variant={isDemoMode ? "warning" : "destructive"} size="lg">
+                {isDemoMode ? "Demo Mode" : "Live Mode"}
+              </Badge>
+            </div>
           </div>
-        </div>
+        </header>
 
-        <div className="@container">
+        <div className="@container container mx-auto pt-5">
           <div className="grid @4xl:grid-cols-5 gap-6 items-start">
             {/* Add Transfer Form */}
-            <Card asChild className="@4xl:sticky @4xl:top-6 @4xl:col-span-2">
+            <Card asChild className="@4xl:sticky @4xl:top-22 @4xl:col-span-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
