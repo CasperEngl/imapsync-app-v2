@@ -40,15 +40,22 @@ export function Combobox({
   const [inputValue, setInputValue] = React.useState("");
   const preventReopenRef = React.useRef(false);
 
-  React.useEffect(() => {
-    if (value !== undefined) {
-      setSelectedValue(value);
-      setInputValue(value);
-    }
-  }, [value]);
+  if (value !== undefined && selectedValue !== value) {
+    setSelectedValue(value);
+  }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (isOpen) {
+          setInputValue("");
+        } else {
+          setInputValue(selectedValue);
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           onMouseDown={(e) => {
@@ -57,6 +64,7 @@ export function Combobox({
           onFocus={() => {
             if (!preventReopenRef.current) {
               setOpen(true);
+              setInputValue("");
             }
             preventReopenRef.current = false;
           }}
@@ -96,13 +104,16 @@ export function Combobox({
             }}
           />
           <CommandList>
-            <CommandEmpty>Press enter to use "{inputValue}"</CommandEmpty>
+            <CommandEmpty>
+              {inputValue ? <>Press Enter to use "{inputValue}"</> : emptyText}
+            </CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
+                    preventReopenRef.current = true;
                     setSelectedValue(currentValue);
                     setInputValue(currentValue);
                     onValueChange?.(currentValue);
