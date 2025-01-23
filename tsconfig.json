@@ -1,0 +1,11 @@
+{
+  "extends": "@total-typescript/tsconfig/tsc/dom/app",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
+  }
+}
