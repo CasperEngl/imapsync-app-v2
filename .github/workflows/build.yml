@@ -21,12 +21,32 @@ jobs:
         with:
           bun-version: latest
 
+      # Add cache for electron and electron-builder
+      - name: Cache Electron
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ runner.temp }}/*.zip
+            ${{ runner.temp }}/*.7z
+            ${{ runner.temp }}/electron
+            ${{ runner.temp }}/electron-builder
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-cache-
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       # Add build step before packaging
       - name: Build Application
         run: bun run build
+
+      # Set electron cache directory before building
+      - name: Set Electron Cache Directory
+        shell: bash
+        run: |
+          echo "ELECTRON_CACHE=${{ runner.temp }}/electron" >> $GITHUB_ENV
+          echo "ELECTRON_BUILDER_CACHE=${{ runner.temp }}/electron-builder" >> $GITHUB_ENV
 
       # Build for different platforms based on the OS
       - name: Build Electron App
