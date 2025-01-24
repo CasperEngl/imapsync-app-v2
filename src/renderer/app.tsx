@@ -118,6 +118,10 @@ export function App() {
     store.send({ type: "removeAllCompleted" });
   };
 
+  const handleRemoveAll = () => {
+    store.send({ type: "removeAll" });
+  };
+
   const handleSourceChange = (field: string, value: string) => {
     setNewTransfer((prev) => ({
       ...prev,
@@ -235,12 +239,12 @@ export function App() {
           </div>
         </header>
 
-        <div className="@container container mx-auto pt-5">
+        <div className="@container container mx-auto py-5">
           <SettingsCard />
 
           <div className="pt-4 grid grid-cols-1 @4xl:grid-cols-5 gap-6 items-start">
             {/* Add Transfer Form */}
-            <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-22 @4xl:col-span-2">
+            <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-32 @4xl:col-span-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -350,8 +354,17 @@ export function App() {
               <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Existing Transfers</CardTitle>
 
-
                 <div className="flex gap-2">
+                  {transfers.length > 0 && (
+                    <Button
+                      onClick={handleRemoveAll}
+                      variant="destructive"
+                    >
+                      Remove All
+                      <CircleMinus className="size-4" />
+                    </Button>
+                  )}
+
                   {isSomeCompleted && (
                     <Button
                       onClick={handleRemoveAllCompleted}

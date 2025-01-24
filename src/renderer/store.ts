@@ -111,6 +111,9 @@ type TransferEventMap = {
   removeAllCompleted: {
     type: "removeAllCompleted";
   };
+  removeAll: {
+    type: "removeAll";
+  };
 };
 
 const STORAGE_KEY = "imapsync-store";
@@ -329,6 +332,10 @@ export const store = createStore<Store, TransferEventMap>(
       transfers: context.transfers.filter(
         (transfer) => transfer.status !== "completed"
       ),
+    }),
+    removeAll: (context) => ({
+      ...context,
+      transfers: [],
     }),
   }
 );
