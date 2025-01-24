@@ -1,4 +1,5 @@
 source_host,source_user,source_password,destination_host,destination_user,destination_password
+test1.lamiral.info,test1,secret1,test2.lamiral.info,test2,secret2
 imap.gmail.com,user1@gmail.com,pass123,imap.outlook.com,user1@outlook.com,pass456
 imap.yahoo.com,user2@yahoo.com,pass789,imap.gmail.com,user2@gmail.com,passabc
 imap.zoho.com,user3@zoho.com,passdef,imap.fastmail.com,user3@fastmail.com,passghi
