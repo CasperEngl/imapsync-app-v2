@@ -34,7 +34,7 @@ export type TransferState = {
   source: Transfer;
   destination: Transfer;
   status: TransferStatus;
-  error?: string;
+  error: string | null;
   progress?: TransferProgress;
   createdAt: number;
   outputs: TransferOutput[];
@@ -153,6 +153,7 @@ export const store = createStore<Store, TransferEventMap>(
           status: "idle" as const,
           createdAt: Date.now(),
           outputs: [],
+          error: null,
         },
       ],
     }),
@@ -170,6 +171,8 @@ export const store = createStore<Store, TransferEventMap>(
             ? {
                 ...transfer,
                 status: "syncing" as const,
+                error: null,
+                outputs: [],
                 progress: {
                   current: 0,
                   total: 100,
@@ -228,6 +231,8 @@ export const store = createStore<Store, TransferEventMap>(
             ? {
                 ...transfer,
                 status: "syncing" as const,
+                error: null,
+                outputs: [],
                 progress: {
                   current: 0,
                   total: 100,
@@ -306,7 +311,7 @@ export const store = createStore<Store, TransferEventMap>(
             status: "idle",
             createdAt: Date.now(),
             outputs: [],
-            error: undefined,
+            error: null,
             progress: undefined,
           },
         ],

@@ -194,16 +194,14 @@ export function TransferItem({
                 : 0
             }
           />
-          <p className="text-sm text-gray-500 mt-1">
-            {transfer.progress?.message || "No progress to show"}
-            {transfer.error && (
-              <span className="text-red-500"> Error: {transfer.error}</span>
-            )}
+          <p className="text-sm mt-1">
+            {transfer.error
+              ? <span className="text-red-500">Error: {transfer.error}</span>
+              : <span className="text-muted-foreground">{transfer.progress?.message || "No progress to show"}</span>}
           </p>
         </div>
 
         <div className="flex gap-2">
-
           <Button
             onClick={() => {
               if (!canStart) return
