@@ -29,7 +29,7 @@ const statusConfig = {
     text: "Completed",
     variant: "success",
     icon: <CheckCircle2 className="size-4" />,
-    disabled: true,
+    disabled: false,
     className: '',
   },
   error: {
@@ -66,7 +66,7 @@ export function TransferItem({
   const outputs = useDeferredValue(transfer.outputs)
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds)
 
-  const canStart = transfer.status === "idle" || transfer.status === "error"
+  const canStart = transfer.status === "idle" || transfer.status === "error" || transfer.status === "completed"
   const config = statusConfig[transfer.status]
 
   return (
