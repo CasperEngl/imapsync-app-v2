@@ -206,10 +206,10 @@ export function App() {
 
   return (
     <Providers>
-      <div className="[app-region:drag] relative pt-4">
-        <header className="z-10 sticky top-0 bg-white shadow py-4">
+      <div className="relative">
+        <header className="[app-region:drag] z-10 sticky top-0 bg-white shadow py-4">
           <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-3xl font-bold">IMAP Sync App</h1>
+            <h1 className="text-3xl font-bold">imapsync App</h1>
           </div>
         </header>
 
