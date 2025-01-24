@@ -6,6 +6,8 @@ import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
 import { Combobox } from "~/renderer/components/combobox.js";
+import { SettingsCard } from '~/renderer/components/settings-card.js';
+import { TransferItem } from "~/renderer/components/transfer-item.js";
 import { Badge } from "~/renderer/components/ui/badge.js";
 import { Button, buttonVariants } from "~/renderer/components/ui/button.js";
 import {
@@ -29,10 +31,6 @@ type StartAllButtonResult = {
   variant: VariantProps<typeof buttonVariants>["variant"];
   text: string;
 };
-
-import { SettingsDialog } from '~/renderer/components/settings-dialog.js';
-import { TransferItem } from "~/renderer/components/transfer-item.js";
-import { ImapsyncBinarySelector } from '~/renderer/imapsync-binary-selector.js';
 
 export function App() {
   const transfers = useSelector(
@@ -216,10 +214,9 @@ export function App() {
         </header>
 
         <div className="@container container mx-auto pt-5">
-          <ImapsyncBinarySelector />
-          <SettingsDialog />
+          <SettingsCard />
 
-          <div className="grid @4xl:grid-cols-5 gap-6 items-start">
+          <div className="pt-4 grid grid-cols-1 @4xl:grid-cols-5 gap-6 items-start">
             {/* Add Transfer Form */}
             <Card asChild className="@4xl:sticky @4xl:top-22 @4xl:col-span-2">
               <form
@@ -252,7 +249,7 @@ export function App() {
                 </CardHeader>
                 <CardContent>
                   <div className="@container/form">
-                    <div className="grid @lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 @lg:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <h3 className="font-medium">Source</h3>
                         <Combobox
