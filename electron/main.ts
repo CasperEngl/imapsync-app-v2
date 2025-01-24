@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import dayjs from "dayjs";
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import Store from "electron-store";
 import * as fs from "fs/promises";
 import * as path from "path";
@@ -9,7 +9,7 @@ Store.initRenderer();
 
 const store = new Store<{
   settings: {
-    logDirectory?: string;
+    logDirectory: string | null;
     imapsyncPath: string | null;
   };
 }>({
@@ -372,4 +372,9 @@ ipcMain.handle("export-transfers", async (event, transfers) => {
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+});
+
+// Add this with the other ipcMain handlers
+ipcMain.handle("open-external-url", async (_, url: string) => {
+  return shell.openExternal(url);
 });

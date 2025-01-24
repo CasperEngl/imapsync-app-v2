@@ -38,6 +38,7 @@ export interface IpcApi {
   exportTransfers: (
     transfers: TransferState[]
   ) => Promise<{ success: boolean; error?: string }>;
+  openExternalUrl: (url: string) => Promise<void>;
 }
 
 declare global {

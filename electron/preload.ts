@@ -41,4 +41,6 @@ contextBridge.exposeInMainWorld("api", {
   selectLogDirectory: () => ipcRenderer.invoke("select-log-directory"),
   getLogDirectory: () => ipcRenderer.invoke("get-log-directory"),
   exportTransfers: () => ipcRenderer.invoke("export-transfers"),
+  openExternalUrl: (url: string) =>
+    ipcRenderer.invoke("open-external-url", url),
 } satisfies IpcApi);

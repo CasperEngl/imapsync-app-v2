@@ -207,9 +207,31 @@ export function App() {
   return (
     <Providers>
       <div className="relative">
-        <header className="[app-region:drag] z-10 sticky top-0 bg-white shadow py-4">
-          <div className="container mx-auto flex justify-between items-center">
+        <div className="[app-region:drag] h-4"></div>
+        <header className="z-10 sticky top-0 bg-white shadow py-4">
+          <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
+
+            <div className="text-sm text-muted-foreground">
+              Powered by{" "}
+              <a
+                href="https://imapsync.lamiral.info/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.api.openExternalUrl('https://imapsync.lamiral.info/');
+                }}
+
+              >
+                imapsync by Gilles Lamiral
+              </a>
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              This is a GUI frontend for imapsync. All email transfer functionality is provided by the imapsync tool created by Gilles Lamiral.
+            </p>
           </div>
         </header>
 
