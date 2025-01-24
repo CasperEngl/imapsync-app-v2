@@ -19,12 +19,12 @@ const Progress = React.forwardRef<
         "h-full w-full flex-1 transition-all",
         value
           ? [
-              value > 0 && value < 100 ? "animate-pulse" : null,
-              value > 0 ? "bg-primary" : "bg-muted",
-            ]
+            value > 0 && value < 100 ? "animate-pulse" : null,
+            value > 0 ? "bg-primary" : "bg-muted",
+          ]
           : null
       )}
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      style={{ transform: `translateX(-${ 100 - (value || 0) }%)` }}
     />
   </ProgressPrimitive.Root>
 ));
