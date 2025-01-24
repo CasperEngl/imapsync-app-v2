@@ -119,3 +119,7 @@
     color: theme("colors.foreground");
   }
 }
+
+summary {
+  cursor: default;
+}
