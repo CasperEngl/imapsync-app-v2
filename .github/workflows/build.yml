@@ -10,8 +10,6 @@ permissions:
 
 env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  ELECTRON_CACHE: ${{ runner.temp }}/electron
-  ELECTRON_BUILDER_CACHE: ${{ runner.temp }}/electron-builder
 
 jobs:
   build:
@@ -54,7 +52,7 @@ jobs:
           elif [ "$RUNNER_OS" == "Windows" ]; then
             bun run electron-builder --win
           else
-            bun run electron-builder --mac
+            bun run electron-builder --mac --x64 --arm64 --compression=maximum
           fi
         shell: bash
 
