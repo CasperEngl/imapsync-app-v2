@@ -208,7 +208,7 @@ export function App() {
     <Providers>
       <div className="relative">
         <div className="[app-region:drag] h-4"></div>
-        <header className="z-10 sticky top-0 bg-white shadow py-4">
+        <header className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky">
           <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
 
@@ -240,7 +240,7 @@ export function App() {
 
           <div className="pt-4 grid grid-cols-1 @4xl:grid-cols-5 gap-6 items-start">
             {/* Add Transfer Form */}
-            <Card asChild className="@4xl:sticky @4xl:top-22 @4xl:col-span-2">
+            <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-22 @4xl:col-span-2">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
