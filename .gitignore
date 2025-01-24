@@ -137,3 +137,9 @@ dist
 
 # Imapsync
 LOG_imapsync
+
+# Electron
+release/
+
+# Mac
+.DS_Store

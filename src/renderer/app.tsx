@@ -7,7 +7,6 @@ import { match } from "ts-pattern";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { SettingsCard } from '~/renderer/components/settings-card.js';
 import { TransferItem } from "~/renderer/components/transfer-item.js";
-import { Badge } from "~/renderer/components/ui/badge.js";
 import { Button, buttonVariants } from "~/renderer/components/ui/button.js";
 import {
   Card,
@@ -207,20 +206,10 @@ export function App() {
 
   return (
     <Providers>
-      <div className="relative">
-        <header className="mt-4 [app-region:drag] z-10 sticky top-0 bg-white shadow py-4">
+      <div className="[app-region:drag] relative pt-4">
+        <header className="z-10 sticky top-0 bg-white shadow py-4">
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-3xl font-bold">IMAP Sync App</h1>
-            <Badge
-              variant={process.env.NODE_ENV === 'production'
-                ? "destructive"
-                : "warning"}
-              size="lg"
-            >
-              {process.env.NODE_ENV === 'production'
-                ? "Production"
-                : "Development"}
-            </Badge>
           </div>
         </header>
 

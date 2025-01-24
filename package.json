@@ -2,12 +2,14 @@
   "name": "imapsync-app-v2",
   "version": "1.0.0",
   "type": "module",
-  "main": "out/main/main.js",
+  "main": "dist/main/main.js",
   "scripts": {
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "prebuild": "electron-vite build",
-    "build": "concurrently -n mac,windows -c blue.bold,green.bold \"electron-builder --mac\" \"electron-builder --win\""
+    "prebuild": "rm -rf release && electron-vite build",
+    "build": "electron-builder -mw",
+    "build:mac": "electron-builder -m",
+    "build:win": "electron-builder -w"
   },
   "keywords": [],
   "author": "Casper Engelmann",
@@ -60,21 +62,41 @@
     "vite": "^6.0.11"
   },
   "build": {
-    "extraResources": [
-      {
-        "from": "resources/bin",
-        "to": "bin",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
+    "appId": "com.imapsync.app",
     "files": [
-      "out/**/*",
-      "resources/**/*"
+      "dist/**/*",
+      "!dist/**/*.map"
     ],
     "directories": {
-      "output": "dist"
-    }
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "extraMetadata": {
+      "name": "Imapsync App"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "compression": "normal"
   }
 }

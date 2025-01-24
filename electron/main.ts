@@ -45,13 +45,14 @@ async function createWindow() {
     height: 800,
     titleBarStyle: "hiddenInset",
     webPreferences: {
+      devTools: !app.isPackaged,
       nodeIntegration: true,
       contextIsolation: true,
       preload: path.join(__dirname, "../preload/preload.mjs"),
     },
   });
 
-  if (process.env.NODE_ENV !== "production") {
+  if (!app.isPackaged) {
     win.loadURL("http://localhost:5173");
     win.webContents.openDevTools();
   } else {
@@ -76,8 +77,7 @@ app.on("window-all-closed", () => {
 });
 
 function getImapsyncBinaryDir(): string {
-  const isDev = process.env.NODE_ENV !== "production";
-  return isDev
+  return !app.isPackaged
     ? path.join(process.cwd(), "resources", "bin")
     : path.join(process.resourcesPath, "bin");
 }
