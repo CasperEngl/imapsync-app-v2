@@ -12,6 +12,17 @@ export default defineConfig({
         entry: resolve(__dirname, "electron/main.ts"),
         formats: ["cjs"],
       },
+      rollupOptions: {
+        external: ["electron"],
+      },
+    },
+  },
+  preload: {
+    build: {
+      lib: {
+        entry: resolve(__dirname, "electron/preload.ts"),
+        formats: ["cjs"],
+      },
     },
   },
   renderer: {
