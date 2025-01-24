@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "prebuild": "electron-vite build"
+    "prebuild": "electron-vite build",
+    "build": "npm run copy-imapsync && electron-vite build",
+    "copy-imapsync": "tsx scripts/copy-imapsync.ts"
   },
   "keywords": [],
   "author": "",
@@ -51,5 +53,23 @@
     "tsx": "^4.19.2",
     "typescript": "^5.3.3",
     "vite": "^6.0.11"
+  },
+  "build": {
+    "extraResources": [
+      {
+        "from": "resources/bin",
+        "to": "bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
   }
 }

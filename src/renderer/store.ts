@@ -4,6 +4,9 @@ type Transfer = {
   host: string;
   user: string;
   password: string;
+  port?: string;
+  ssl?: boolean;
+  tls?: boolean;
 };
 
 export type TransferStatus = "idle" | "syncing" | "completed" | "error";
@@ -12,9 +15,10 @@ type TransferProgress = {
   current: number;
   total: number;
   message: string;
+  progress: number;
 };
 
-type TransferState = {
+export type TransferState = {
   id: string;
   source: Transfer;
   destination: Transfer;
@@ -26,7 +30,6 @@ type TransferState = {
 
 interface Store {
   transfers: TransferState[];
-  isDemoMode: boolean;
 }
 
 type TransferEventMap = {
@@ -74,44 +77,13 @@ type TransferEventMap = {
     current: number;
     total: number;
     message: string;
+    progress: number;
   };
 };
 
 export const store = createStore<Store, TransferEventMap>(
   {
-    transfers: [
-      {
-        id: "demo1",
-        source: {
-          host: "imap.gmail.com",
-          user: "user1@gmail.com",
-          password: "password1",
-        },
-        destination: {
-          host: "imap.outlook.com",
-          user: "user1@outlook.com",
-          password: "password2",
-        },
-        status: "idle",
-        createdAt: Date.now(),
-      },
-      {
-        id: "demo2",
-        source: {
-          host: "imap.yahoo.com",
-          user: "user2@yahoo.com",
-          password: "password3",
-        },
-        destination: {
-          host: "imap.protonmail.com",
-          user: "user2@protonmail.com",
-          password: "password4",
-        },
-        status: "idle",
-        createdAt: Date.now(),
-      },
-    ],
-    isDemoMode: true,
+    transfers: [],
   },
   {
     addTransfer: (context, event) => ({
@@ -131,27 +103,7 @@ export const store = createStore<Store, TransferEventMap>(
         (t) => t.status === "idle"
       );
 
-      if (context.isDemoMode) {
-        for (const transfer of idleTransfers) {
-          let current = 0;
-          const total = 100;
-          const interval = setInterval(() => {
-            current += Math.floor(Math.random() * 10) + 1;
-            if (current >= total) {
-              current = total;
-              clearInterval(interval);
-              store.send({ type: "completeTransfer", id: transfer.id });
-            }
-            store.send({
-              type: "updateTransferProgress",
-              id: transfer.id,
-              current,
-              total,
-              message: `Simulating transfer: ${current}%`,
-            });
-          }, 500);
-        }
-      }
+      window.api.startAllTransfers(idleTransfers);
 
       return {
         ...context,
@@ -164,6 +116,7 @@ export const store = createStore<Store, TransferEventMap>(
                   current: 0,
                   total: 100,
                   message: "Starting transfer...",
+                  progress: 0,
                 },
               }
             : transfer
@@ -203,27 +156,12 @@ export const store = createStore<Store, TransferEventMap>(
     }),
     startTransfer: (context, event) => {
       const transfer = context.transfers.find((t) => t.id === event.id);
-      if (!transfer) return context;
-
-      if (context.isDemoMode) {
-        let current = 0;
-        const total = 100;
-        const interval = setInterval(() => {
-          current += Math.floor(Math.random() * 10) + 1;
-          if (current >= total) {
-            current = total;
-            clearInterval(interval);
-            store.send({ type: "completeTransfer", id: event.id });
-          }
-          store.send({
-            type: "updateTransferProgress",
-            id: event.id,
-            current,
-            total,
-            message: `Simulating transfer: ${current}%`,
-          });
-        }, 500);
+      if (!transfer) {
+        console.warn("[Store] Transfer not found:", event.id);
+        return context;
       }
+
+      window.api.startTransfer(transfer);
 
       return {
         ...context,
@@ -236,6 +174,7 @@ export const store = createStore<Store, TransferEventMap>(
                   current: 0,
                   total: 100,
                   message: "Starting transfer...",
+                  progress: 0,
                 },
               }
             : transfer
@@ -272,6 +211,7 @@ export const store = createStore<Store, TransferEventMap>(
                 current: event.current,
                 total: event.total,
                 message: event.message,
+                progress: event.progress,
               },
             }
           : transfer
@@ -279,3 +219,31 @@ export const store = createStore<Store, TransferEventMap>(
     }),
   }
 );
+
+// Setup IPC listeners
+window.api.onTransferProgress((event, data) => {
+  store.send({
+    type: "updateTransferProgress",
+    id: data.id,
+    current: data.current,
+    total: data.total,
+    message: data.message,
+    progress: data.progress,
+  });
+});
+
+window.api.onTransferComplete((event, data) => {
+  store.send({
+    type: "completeTransfer",
+    id: data.id,
+  });
+});
+
+window.api.onTransferError((event, data) => {
+  console.error("[Store] Transfer error:", data);
+  store.send({
+    type: "transferError",
+    id: data.id,
+    error: data.error || "Unknown error",
+  });
+});

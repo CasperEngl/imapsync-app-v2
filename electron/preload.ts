@@ -1,20 +1,32 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type { IpcApi } from "../src/renderer/types.d.ts";
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld("api", {
-  send: (channel: string, data: any) => {
-    // whitelist channels
-    const validChannels = ["toMain"];
-    if (validChannels.includes(channel)) {
-      ipcRenderer.send(channel, data);
-    }
+  startTransfer: (transferData) => {
+    return ipcRenderer.invoke("start-transfer", transferData);
   },
-  receive: (channel: string, func: Function) => {
-    const validChannels = ["fromMain"];
-    if (validChannels.includes(channel)) {
-      // Deliberately strip event as it includes `sender`
-      ipcRenderer.on(channel, (event, ...args) => func(...args));
-    }
+  startAllTransfers: (transfers) => {
+    return ipcRenderer.invoke("start-all-transfers", transfers);
   },
-});
+  onTransferProgress: (callback) => {
+    ipcRenderer.on("transfer-progress", callback);
+
+    return () => {
+      ipcRenderer.removeListener("transfer-progress", callback);
+    };
+  },
+  onTransferComplete: (callback) => {
+    ipcRenderer.on("transfer-complete", callback);
+
+    return () => {
+      ipcRenderer.removeListener("transfer-complete", callback);
+    };
+  },
+  onTransferError: (callback) => {
+    ipcRenderer.on("transfer-error", callback);
+
+    return () => {
+      ipcRenderer.removeListener("transfer-error", callback);
+    };
+  },
+} satisfies IpcApi);
