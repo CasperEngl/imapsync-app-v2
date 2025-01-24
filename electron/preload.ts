@@ -29,4 +29,13 @@ contextBridge.exposeInMainWorld("api", {
       ipcRenderer.removeListener("transfer-error", callback);
     };
   },
+  onTransferOutput: (callback) => {
+    ipcRenderer.on("transfer-output", callback);
+
+    return () => {
+      ipcRenderer.removeListener("transfer-output", callback);
+    };
+  },
+  selectImapsyncBinary: () => ipcRenderer.invoke("select-imapsync-binary"),
+  getImapsyncPath: () => ipcRenderer.invoke("get-imapsync-path"),
 } satisfies IpcApi);

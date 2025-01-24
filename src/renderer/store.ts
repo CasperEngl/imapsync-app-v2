@@ -1,6 +1,7 @@
 import { createStore } from "@xstate/store";
+import { nanoid } from "nanoid";
 
-type Transfer = {
+export type Transfer = {
   host: string;
   user: string;
   password: string;
@@ -18,6 +19,12 @@ type TransferProgress = {
   progress: number;
 };
 
+type TransferOutput = {
+  content: string;
+  isError: boolean;
+  timestamp: number;
+};
+
 export type TransferState = {
   id: string;
   source: Transfer;
@@ -26,10 +33,12 @@ export type TransferState = {
   error?: string;
   progress?: TransferProgress;
   createdAt: number;
+  outputs: TransferOutput[];
 };
 
 interface Store {
   transfers: TransferState[];
+  imapsyncPath: string | null;
 }
 
 type TransferEventMap = {
@@ -79,11 +88,40 @@ type TransferEventMap = {
     message: string;
     progress: number;
   };
+  setImapsyncPath: {
+    type: "setImapsyncPath";
+    path: string | null;
+  };
+  addTransferOutput: {
+    type: "addTransferOutput";
+    id: string;
+    content: string;
+    isError: boolean;
+    timestamp: number;
+  };
 };
 
 export const store = createStore<Store, TransferEventMap>(
   {
-    transfers: [],
+    transfers: [
+      {
+        id: nanoid(),
+        source: {
+          host: "test1.lamiral.info",
+          user: "test1",
+          password: "secret1",
+        },
+        destination: {
+          host: "test2.lamiral.info",
+          user: "test2",
+          password: "secret2",
+        },
+        status: "idle" as const,
+        createdAt: Date.now(),
+        outputs: [],
+      },
+    ],
+    imapsyncPath: null,
   },
   {
     addTransfer: (context, event) => ({
@@ -95,6 +133,7 @@ export const store = createStore<Store, TransferEventMap>(
           destination: event.destination,
           status: "idle" as const,
           createdAt: Date.now(),
+          outputs: [],
         },
       ],
     }),
@@ -217,6 +256,27 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
+    setImapsyncPath: (_context, event) => ({
+      imapsyncPath: event.path,
+    }),
+    addTransferOutput: (context, event) => ({
+      ...context,
+      transfers: context.transfers.map((transfer) =>
+        transfer.id === event.id
+          ? {
+              ...transfer,
+              outputs: [
+                ...transfer.outputs,
+                {
+                  content: event.content,
+                  isError: event.isError,
+                  timestamp: Date.now(),
+                },
+              ],
+            }
+          : transfer
+      ),
+    }),
   }
 );
 
@@ -245,5 +305,16 @@ window.api.onTransferError((event, data) => {
     type: "transferError",
     id: data.id,
     error: data.error || "Unknown error",
+  });
+});
+
+window.api.onTransferOutput((event, data) => {
+  console.log("[Store] Transfer output:", data);
+  store.send({
+    type: "addTransferOutput",
+    id: data.id,
+    content: data.content,
+    isError: data.isError,
+    timestamp: data.timestamp,
   });
 });

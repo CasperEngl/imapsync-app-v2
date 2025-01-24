@@ -6,7 +6,6 @@ import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
 import { Combobox } from "~/renderer/components/combobox.js";
-import { TransferBadge } from "~/renderer/components/transfer-badge.js";
 import { Badge } from "~/renderer/components/ui/badge.js";
 import { Button, buttonVariants } from "~/renderer/components/ui/button.js";
 import {
@@ -18,8 +17,7 @@ import {
   CardTitle,
 } from "~/renderer/components/ui/card.js";
 import { Input } from "~/renderer/components/ui/input.js";
-import { Progress } from "~/renderer/components/ui/progress.js";
-import { Providers } from "~/renderer/providers.js";
+import { Providers, queryClient } from "~/renderer/providers.js";
 import { store } from "./store.js";
 
 type StartAllButtonState = {
@@ -31,6 +29,65 @@ type StartAllButtonResult = {
   variant: VariantProps<typeof buttonVariants>["variant"];
   text: string;
 };
+
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { TransferItem } from "~/renderer/components/transfer-item.js";
+import { Skeleton } from '~/renderer/components/ui/skeleton.js';
+
+function ImapsyncBinarySelector() {
+  const imapsyncPathQuery = useQuery({
+    queryKey: ["imapsyncPath"],
+    queryFn: () => window.api.getImapsyncPath(),
+  });
+
+  const selectBinaryMutation = useMutation({
+    mutationFn: async () => {
+      const path = await window.api.selectImapsyncBinary();
+      if (path) {
+        store.send({ type: "setImapsyncPath", path });
+      }
+      return path;
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof Error ? error.message : "Failed to upload binary");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['imapsyncPath'] })
+    }
+  });
+
+  const handleSelectBinary = () => {
+    selectBinaryMutation.mutate();
+  };
+
+  return (
+    <div className="p-4 border rounded-lg mb-4">
+      <h2 className="text-lg font-semibold mb-2">imapsync Binary</h2>
+      <div className="space-y-2">
+        {imapsyncPathQuery.isLoading ? (
+          <Skeleton className="h-5 w-full max-w-[300px]" />
+        ) : imapsyncPathQuery.data ? (
+          <div className="text-sm text-muted-foreground">
+            Current path: {imapsyncPathQuery.data}
+          </div>
+        ) : null}
+        <Button
+          onClick={handleSelectBinary}
+          disabled={selectBinaryMutation.isPending}
+        >
+          {selectBinaryMutation.isPending ? "Uploading..." : "Select imapsync Binary"}
+        </Button>
+        {selectBinaryMutation.isError && (
+          <div className="text-red-500 mt-2">
+            {selectBinaryMutation.error instanceof Error
+              ? selectBinaryMutation.error.message
+              : "Failed to upload binary"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function App() {
   const transfers = useSelector(
@@ -200,22 +257,22 @@ export function App() {
         <header className="z-10 sticky top-0 bg-white shadow py-4">
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-3xl font-bold">IMAP Sync App</h1>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={process.env.NODE_ENV === 'production'
-                  ? "destructive"
-                  : "warning"}
-                size="lg"
-              >
-                {process.env.NODE_ENV === 'production'
-                  ? "Production"
-                  : "Development"}
-              </Badge>
-            </div>
+            <Badge
+              variant={process.env.NODE_ENV === 'production'
+                ? "destructive"
+                : "warning"}
+              size="lg"
+            >
+              {process.env.NODE_ENV === 'production'
+                ? "Production"
+                : "Development"}
+            </Badge>
           </div>
         </header>
 
         <div className="@container container mx-auto pt-5">
+          <ImapsyncBinarySelector />
+
           <div className="grid @4xl:grid-cols-5 gap-6 items-start">
             {/* Add Transfer Form */}
             <Card asChild className="@4xl:sticky @4xl:top-22 @4xl:col-span-2">
@@ -342,177 +399,12 @@ export function App() {
                   transfers.map((transfer, index) => (
                     <div key={transfer.id}>
                       {index > 0 && <div className="h-px bg-border my-6" />}
-                      <div className="pt-6">
-                        <div className="@container/transfer mb-4">
-                          <div className="grid @lg/transfer:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                              <h4 className="font-medium text-sm text-gray-600">
-                                Source
-                              </h4>
-                              <div>
-                                <label className="block text-sm text-gray-500">
-                                  Host
-                                </label>
-                                <Combobox
-                                  options={hostOptions}
-                                  value={transfer.source.host}
-                                  onValueChange={(value) =>
-                                    store.send({
-                                      type: "updateTransferSource",
-                                      id: transfer.id,
-                                      field: "host",
-                                      value,
-                                    })
-                                  }
-                                  placeholder="Select or enter host..."
-                                  searchPlaceholder="Search hosts..."
-                                  className="w-full"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm text-gray-500">
-                                  Username
-                                </label>
-                                <Input
-                                  type="text"
-                                  value={transfer.source.user}
-                                  onChange={(e) =>
-                                    store.send({
-                                      type: "updateTransferSource",
-                                      id: transfer.id,
-                                      field: "user",
-                                      value: e.target.value,
-                                    })
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm text-gray-500">
-                                  Password
-                                </label>
-                                <Input
-                                  type="password"
-                                  value={transfer.source.password}
-                                  onChange={(e) =>
-                                    store.send({
-                                      type: "updateTransferSource",
-                                      id: transfer.id,
-                                      field: "password",
-                                      value: e.target.value,
-                                    })
-                                  }
-                                />
-                              </div>
-                            </div>
-
-                            <div className="space-y-3">
-                              <h4 className="font-medium text-sm text-gray-600">
-                                Destination
-                              </h4>
-                              <div>
-                                <label className="block text-sm text-gray-500">
-                                  Host
-                                </label>
-                                <Combobox
-                                  options={hostOptions}
-                                  value={transfer.destination.host}
-                                  onValueChange={(value) =>
-                                    store.send({
-                                      type: "updateTransferDestination",
-                                      id: transfer.id,
-                                      field: "host",
-                                      value,
-                                    })
-                                  }
-                                  placeholder="Select or enter host..."
-                                  searchPlaceholder="Search hosts..."
-                                  className="w-full"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm text-gray-500">
-                                  Username
-                                </label>
-                                <Input
-                                  type="text"
-                                  value={transfer.destination.user}
-                                  onChange={(e) =>
-                                    store.send({
-                                      type: "updateTransferDestination",
-                                      id: transfer.id,
-                                      field: "user",
-                                      value: e.target.value,
-                                    })
-                                  }
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm text-gray-500">
-                                  Password
-                                </label>
-                                <Input
-                                  type="password"
-                                  value={transfer.destination.password}
-                                  onChange={(e) =>
-                                    store.send({
-                                      type: "updateTransferDestination",
-                                      id: transfer.id,
-                                      field: "password",
-                                      value: e.target.value,
-                                    })
-                                  }
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Progress bar for syncing state */}
-                        <div className="mb-4 flex gap-2.5 items-center">
-                          <TransferBadge
-                            status={transfer.status}
-                            className="h-10"
-                          />
-
-                          <div className="w-full mt-0.5">
-                            <Progress
-                              value={
-                                transfer.progress
-                                  ? (transfer.progress.current /
-                                    transfer.progress.total) *
-                                  100
-                                  : 0
-                              }
-                            />
-                            <p className="text-sm text-gray-500 mt-1">
-                              {transfer.progress?.message ||
-                                "No progress to show"}
-                              {transfer.error && (
-                                <span className="text-red-500">
-                                  {" "}
-                                  Error: {transfer.error}
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          {transfer.status === "idle" && (
-                            <Button
-                              onClick={() => handleStartTransfer(transfer.id)}
-                            >
-                              Start
-                            </Button>
-                          )}
-                          <Button
-                            variant="destructive"
-                            onClick={() => handleRemoveTransfer(transfer.id)}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
+                      <TransferItem
+                        transfer={transfer}
+                        hostOptions={hostOptions}
+                        onStartTransfer={handleStartTransfer}
+                        onRemoveTransfer={handleRemoveTransfer}
+                      />
                     </div>
                   ))
                 )}

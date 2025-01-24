@@ -10,10 +10,7 @@ export default defineConfig({
     build: {
       lib: {
         entry: resolve(__dirname, "electron/main.ts"),
-        formats: ["cjs"],
-      },
-      rollupOptions: {
-        external: ["electron"],
+        formats: ["es"],
       },
     },
   },
@@ -21,7 +18,7 @@ export default defineConfig({
     build: {
       lib: {
         entry: resolve(__dirname, "electron/preload.ts"),
-        formats: ["cjs"],
+        formats: ["es"],
       },
     },
   },

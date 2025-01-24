@@ -1,8 +1,17 @@
 import { spawn } from "child_process";
-import { app, BrowserWindow, ipcMain } from "electron";
-import fs from "fs";
-import path from "path";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import Store from "electron-store";
+import * as fs from "fs/promises";
+import * as path from "path";
 import type { TransferState } from "../src/renderer/store.js";
+
+Store.initRenderer();
+
+const store = new Store<{ imapsyncPath: string | null }>({
+  defaults: {
+    imapsyncPath: null,
+  },
+});
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -11,7 +20,7 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
-      preload: path.join(__dirname, "../preload/preload.cjs"),
+      preload: path.join(__dirname, "../preload/preload.mjs"),
     },
   });
 
@@ -39,33 +48,37 @@ app.on("window-all-closed", () => {
   }
 });
 
-function getImapsyncPath(): string {
+function getImapsyncBinaryDir(): string {
   const isDev = process.env.NODE_ENV !== "production";
-  const resourcesPath = isDev
-    ? path.join(process.cwd(), "resources")
-    : process.resourcesPath;
-
-  return path.join(resourcesPath, "bin", "imapsync");
-
-  switch (process.platform) {
-    case "win32":
-      return path.join(resourcesPath, "bin", "imapsync.exe");
-    case "darwin":
-      return path.join(resourcesPath, "bin", "imapsync-mac");
-    default: // linux
-      return path.join(resourcesPath, "bin", "imapsync-linux");
-  }
+  return isDev
+    ? path.join(process.cwd(), "resources", "bin")
+    : path.join(process.resourcesPath, "bin");
 }
 
-function runImapsync(transfer: TransferState, win: BrowserWindow) {
+function getImapsyncPath(): string {
+  // @ts-expect-error Electron Store badly typed
+  const storedPath = store.get("imapsyncPath");
+
+  console.log("storedPath", storedPath);
+
+  if (storedPath) {
+    return storedPath;
+  }
+
+  // Fall back to default location
+  return path.join(getImapsyncBinaryDir(), "imapsync");
+}
+
+async function runImapsync(transfer: TransferState, win: BrowserWindow) {
+  const imapsyncPath = getImapsyncPath();
+
+  try {
+    await fs.access(imapsyncPath);
+  } catch {
+    throw new Error(`imapsync binary not found at ${imapsyncPath}`);
+  }
+
   return new Promise((resolve, reject) => {
-    const imapsyncPath = getImapsyncPath();
-
-    if (!fs.existsSync(imapsyncPath)) {
-      reject(new Error(`imapsync binary not found at ${imapsyncPath}`));
-      return;
-    }
-
     const args = [
       "--host1",
       transfer.source.host,
@@ -81,9 +94,6 @@ function runImapsync(transfer: TransferState, win: BrowserWindow) {
       transfer.destination.password,
       "--useheader",
       "Message-Id",
-      "--skipsize",
-      "--addheader",
-      "X-IMAPSYNC-ID: " + transfer.id,
     ];
 
     const imapsync = spawn(imapsyncPath, args, {
@@ -95,13 +105,20 @@ function runImapsync(transfer: TransferState, win: BrowserWindow) {
     let totalProgress = 0;
     let messageCount = 0;
     let currentFolder = "";
-    let currentMessage = "";
     let currentStage = "Initializing";
 
     imapsync.stdout.setEncoding("utf8");
 
     imapsync.stdout.on("data", (data) => {
       let output = data.toString();
+
+      // Send raw output to frontend
+      win.webContents.send("transfer-output", {
+        id: transfer.id,
+        content: output,
+        isError: false,
+        timestamp: Date.now(),
+      });
 
       while (true) {
         const newlineIndex = output.indexOf("\n");
@@ -132,6 +149,10 @@ function runImapsync(transfer: TransferState, win: BrowserWindow) {
         );
         if (totalMatch) {
           totalProgress = parseInt(totalMatch[1] ?? "0", 10);
+
+          console.log("totalProgress", totalProgress);
+          console.log("messageCount", messageCount);
+
           win.webContents.send("transfer-progress", {
             id: transfer.id,
             current: messageCount,
@@ -144,8 +165,6 @@ function runImapsync(transfer: TransferState, win: BrowserWindow) {
         // Track individual message transfers
         if (line.includes("Message ID")) {
           messageCount++;
-          const messageIdMatch = line.match(/Message ID (\S+)/);
-          currentMessage = messageIdMatch ? messageIdMatch[1] : "";
 
           if (totalProgress > 0) {
             const progress = Math.round((messageCount / totalProgress) * 100);
@@ -194,7 +213,13 @@ function runImapsync(transfer: TransferState, win: BrowserWindow) {
     });
 
     imapsync.stderr.on("data", (data) => {
-      // Keep stderr handling but remove logging
+      // Send stderr output to frontend as well
+      win.webContents.send("transfer-output", {
+        id: transfer.id,
+        content: data.toString(),
+        isError: true,
+        timestamp: Date.now(),
+      });
     });
 
     imapsync.on("error", (error) => {
@@ -251,4 +276,29 @@ ipcMain.handle("start-all-transfers", async (event, transfers) => {
       });
     }
   }
+});
+
+ipcMain.handle("select-imapsync-binary", async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters: [{ name: "Executables", extensions: ["*"] }],
+    title: "Select imapsync binary",
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+
+  // Make it executable
+  await fs.chmod(result.filePaths[0], "755");
+
+  // @ts-expect-error Electron Store badly typed
+  store.set("imapsyncPath", result.filePaths[0]);
+
+  return result.filePaths[0];
+});
+
+// Add a handler to get the current path
+ipcMain.handle("get-imapsync-path", () => {
+  return getImapsyncPath();
 });

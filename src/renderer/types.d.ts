@@ -9,6 +9,13 @@ interface TransferData {
   progress: number;
 }
 
+interface TransferOutputData {
+  id: string;
+  content: string;
+  isError: boolean;
+  timestamp: number;
+}
+
 export interface IpcApi {
   startAllTransfers: (transfers: TransferState[]) => void;
   startTransfer: (transfer: TransferState) => void;
@@ -21,6 +28,11 @@ export interface IpcApi {
   onTransferError: (
     callback: (event: unknown, data: Pick<TransferData, "id" | "error">) => void
   ) => void;
+  onTransferOutput: (
+    callback: (event: unknown, data: TransferOutputData) => void
+  ) => void;
+  selectImapsyncBinary: () => Promise<string>;
+  getImapsyncPath: () => Promise<string>;
 }
 
 declare global {
