@@ -12,6 +12,7 @@ export default defineConfig({
         entry: resolve(__dirname, "electron/main.ts"),
         formats: ["es"],
       },
+      outDir: "dist/main",
     },
   },
   preload: {
@@ -20,6 +21,7 @@ export default defineConfig({
         entry: resolve(__dirname, "electron/preload.ts"),
         formats: ["es"],
       },
+      outDir: "dist/preload",
     },
   },
   renderer: {
@@ -28,6 +30,9 @@ export default defineConfig({
       alias: {
         "~": resolve(__dirname, "src"),
       },
+    },
+    build: {
+      outDir: "dist/renderer",
     },
   },
 });

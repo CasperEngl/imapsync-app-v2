@@ -7,12 +7,12 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "prebuild": "electron-vite build",
-    "build": "electron-vite build"
+    "build": "concurrently -n mac,windows -c blue.bold,green.bold \"electron-builder --mac\" \"electron-builder --win\""
   },
   "keywords": [],
-  "author": "",
+  "author": "Casper Engelmann",
   "license": "ISC",
-  "description": "",
+  "description": "Imapsync GUI",
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.3",
     "@radix-ui/react-dialog": "^1.1.5",
@@ -48,6 +48,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^8.2.2",
     "electron": "^34.0.1",
+    "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
