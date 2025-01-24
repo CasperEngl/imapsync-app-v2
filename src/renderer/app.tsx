@@ -197,7 +197,7 @@ export function App() {
   return (
     <Providers>
       <div className="relative">
-        <header className="z-10 sticky top-0 bg-white shadow py-4">
+        <header className="mt-4 [app-region:drag] z-10 sticky top-0 bg-white shadow py-4">
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-3xl font-bold">IMAP Sync App</h1>
             <Badge
@@ -232,20 +232,26 @@ export function App() {
                     and destination server details below
                   </CardDescription>
 
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv"
-                    className="hidden"
-                    onChange={handleBulkImport}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Import from CSV
-                  </Button>
+                  <div className="pt-4">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".csv"
+                      className="hidden"
+                      onChange={handleBulkImport}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      Import from CSV
+                    </Button>
+                    <CardDescription className="pt-2">
+                      The CSV file is expected to contain column headers, so the first line will be skipped
+                    </CardDescription>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="@container/form">
