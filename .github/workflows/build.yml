@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Add build step before packaging
+      - name: Build Application
+        run: bun run build
+
       # Build for different platforms based on the OS
       - name: Build Electron App
         run: |

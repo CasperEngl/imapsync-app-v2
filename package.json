@@ -6,10 +6,7 @@
   "scripts": {
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "prebuild": "rm -rf release && electron-vite build",
-    "build": "electron-builder -mw",
-    "build:mac": "electron-builder -m",
-    "build:win": "electron-builder -w"
+    "build": "rm -rf release && electron-vite build"
   },
   "keywords": [],
   "author": "Casper Engelmann",
