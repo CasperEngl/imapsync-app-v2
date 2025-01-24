@@ -98,6 +98,9 @@
         }
       ]
     },
-    "compression": "normal"
+    "compression": "normal",
+    "dmg": {
+      "sign": false
+    }
   }
 }
