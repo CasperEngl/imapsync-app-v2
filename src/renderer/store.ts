@@ -108,29 +108,37 @@ type TransferEventMap = {
   toggleShowTransferIds: {
     type: "toggleShowTransferIds";
   };
+  removeAllCompleted: {
+    type: "removeAllCompleted";
+  };
 };
+
+const STORAGE_KEY = "imapsync-store";
+
+function loadPersistedState(): Partial<Store> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error("[Store] Failed to load persisted state:", error);
+  }
+  return {};
+}
+
+function persistState(state: Store) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error("[Store] Failed to persist state:", error);
+  }
+}
 
 export const store = createStore<Store, TransferEventMap>(
   {
-    transfers: [
-      {
-        id: idGenerator(),
-        source: {
-          host: "test1.lamiral.info",
-          user: "test1",
-          password: "secret1",
-        },
-        destination: {
-          host: "test2.lamiral.info",
-          user: "test2",
-          password: "secret2",
-        },
-        status: "idle" as const,
-        createdAt: Date.now(),
-        outputs: [],
-      },
-    ],
-    settings: {
+    transfers: loadPersistedState().transfers || [],
+    settings: loadPersistedState().settings || {
       showTransferIds: true,
     },
   },
@@ -311,8 +319,19 @@ export const store = createStore<Store, TransferEventMap>(
         showTransferIds: !context.settings.showTransferIds,
       },
     }),
+    removeAllCompleted: (context) => ({
+      ...context,
+      transfers: context.transfers.filter(
+        (transfer) => transfer.status !== "completed"
+      ),
+    }),
   }
 );
+
+// Add subscription to persist state changes
+store.subscribe((state) => {
+  persistState(state.context);
+});
 
 // Setup IPC listeners
 window.api.onTransferProgress((event, data) => {

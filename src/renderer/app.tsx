@@ -37,9 +37,17 @@ export function App() {
     (snapshot) => snapshot.context.transfers
   );
 
-  const isSyncing = transfers.some((t) => t.status === "syncing");
+  const isSyncing = transfers.some((transfer) => {
+    return transfer.status === "syncing";
+  });
 
-  const isAllCompleted = transfers.every((t) => t.status === "completed");
+  const isAllCompleted = transfers.every((transfer) => {
+    return transfer.status === "completed";
+  });
+
+  const isSomeCompleted = transfers.some(transfer => {
+    return transfer.status === 'completed';
+  })
 
   const startAllButton = match<
     StartAllButtonState,
@@ -105,6 +113,10 @@ export function App() {
 
   const handleStartAll = () => {
     store.send({ type: "startAll" });
+  };
+
+  const handleRemoveAllCompleted = () => {
+    store.send({ type: "removeAllCompleted" });
   };
 
   const handleSourceChange = (field: string, value: string) => {
@@ -327,15 +339,27 @@ export function App() {
               <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Existing Transfers</CardTitle>
 
-                {transfers.length > 0 ? (
-                  <Button
-                    onClick={handleStartAll}
-                    disabled={isSyncing || isAllCompleted}
-                    variant={startAllButton.variant}
-                  >
-                    {startAllButton.text}
-                  </Button>
-                ) : null}
+
+                <div className="flex gap-2">
+                  {isSomeCompleted && (
+                    <Button
+                      onClick={handleRemoveAllCompleted}
+                      variant="destructive"
+                    >
+                      Remove Completed
+                    </Button>
+                  )}
+
+                  {transfers.length > 0 ? (
+                    <Button
+                      onClick={handleStartAll}
+                      disabled={isSyncing || isAllCompleted}
+                      variant={startAllButton.variant}
+                    >
+                      {startAllButton.text}
+                    </Button>
+                  ) : null}
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {transfers.length === 0 ? (
