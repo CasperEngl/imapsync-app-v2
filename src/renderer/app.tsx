@@ -74,10 +74,6 @@ export function App() {
     [transfers]
   );
 
-  const isDemoMode = useSelector(
-    store,
-    (snapshot) => snapshot.context.isDemoMode
-  );
   const [newTransfer, setNewTransfer] = useState({
     source: { host: "", user: "", password: "" },
     destination: { host: "", user: "", password: "" },
@@ -205,8 +201,15 @@ export function App() {
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-3xl font-bold">IMAP Sync App</h1>
             <div className="flex items-center gap-2">
-              <Badge variant={isDemoMode ? "warning" : "destructive"} size="lg">
-                {isDemoMode ? "Demo Mode" : "Live Mode"}
+              <Badge
+                variant={process.env.NODE_ENV === 'production'
+                  ? "destructive"
+                  : "warning"}
+                size="lg"
+              >
+                {process.env.NODE_ENV === 'production'
+                  ? "Production"
+                  : "Development"}
               </Badge>
             </div>
           </div>
@@ -319,15 +322,15 @@ export function App() {
               <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Existing Transfers</CardTitle>
 
-                <Button
-                  onClick={handleStartAll}
-                  disabled={
-                    transfers.length === 0 || isSyncing || isAllCompleted
-                  }
-                  variant={startAllButton.variant}
-                >
-                  {startAllButton.text}
-                </Button>
+                {transfers.length > 0 ? (
+                  <Button
+                    onClick={handleStartAll}
+                    disabled={isSyncing || isAllCompleted}
+                    variant={startAllButton.variant}
+                  >
+                    {startAllButton.text}
+                  </Button>
+                ) : null}
               </CardHeader>
               <CardContent className="space-y-4">
                 {transfers.length === 0 ? (
