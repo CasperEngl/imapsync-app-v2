@@ -106,14 +106,14 @@
           ]
         }
       ],
-      "icon": "assets/icon.ico",
-      "nsis": {
-        "oneClick": false,
-        "allowToChangeInstallationDirectory": true,
-        "createDesktopShortcut": true,
-        "createStartMenuShortcut": true
-      }
+      "icon": "assets/icon.ico"
     },
-    "compression": "normal"
+    "compression": "normal",
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }
