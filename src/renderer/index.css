@@ -110,7 +110,10 @@
 @layer base {
   * {
     border-color: theme("colors.border");
+    -webkit-user-select: none;
+    user-select: none;
   }
+
   body {
     font-family: theme("fontFamily.sans");
     -webkit-font-smoothing: antialiased;
@@ -118,8 +121,18 @@
     background-color: theme("colors.background");
     color: theme("colors.foreground");
   }
-}
 
-summary {
-  cursor: default;
+  summary {
+    cursor: default;
+  }
+
+  /* Add selectable elements */
+  input,
+  textarea,
+  [contenteditable="true"],
+  code,
+  pre * {
+    -webkit-user-select: text;
+    user-select: text;
+  }
 }
