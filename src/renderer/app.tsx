@@ -1,7 +1,6 @@
 import { useSelector } from "@xstate/store/react";
 import type { VariantProps } from "class-variance-authority";
 import { ArrowRightLeft } from "lucide-react";
-import { nanoid } from "nanoid";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
@@ -20,7 +19,7 @@ import {
 } from "~/renderer/components/ui/card.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Providers } from "~/renderer/providers.js";
-import { store } from "./store.js";
+import { idGenerator, store } from "./store.js";
 
 type StartAllButtonState = {
   isSyncing: boolean;
@@ -82,7 +81,7 @@ export function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddTransfer = () => {
-    const id = nanoid();
+    const id = idGenerator();
     store.send({
       type: "addTransfer",
       id,
@@ -144,7 +143,7 @@ export function App() {
           destPass = "",
         ] = line.split(",").map((val) => val.trim());
 
-        const id = nanoid();
+        const id = idGenerator();
         store.send({
           type: "addTransfer",
           id,

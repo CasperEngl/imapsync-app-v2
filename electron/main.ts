@@ -57,8 +57,6 @@ async function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
-
-  const logDir = await getLogDirectory();
 }
 
 app.whenReady().then(() => {
@@ -124,6 +122,8 @@ async function runImapsync(transfer: TransferState, win: BrowserWindow) {
       "Message-Id",
       "--logdir",
       logDir,
+      "--logfile",
+      `transfer_${new Date().toISOString().split("T")[0]}_${transfer.id}.log`,
     ];
 
     const imapsync = spawn(imapsyncPath, args, {

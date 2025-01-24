@@ -1,3 +1,5 @@
+import { useSelector } from '@xstate/store/react';
+import { Copy } from "lucide-react";
 import { useDeferredValue } from 'react';
 import { Combobox } from "~/renderer/components/combobox.js";
 import { TransferBadge } from "~/renderer/components/transfer-badge.js";
@@ -21,9 +23,15 @@ export function TransferItem({
   onRemoveTransfer,
 }: TransferItemProps) {
   const outputs = useDeferredValue(transfer.outputs)
+  const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds)
   return (
     <div>
       <div className="pt-6">
+        {showTransferIds && (
+          <div className="text-lg text-accent-foreground pb-2 font-mono">
+            {transfer.id}
+          </div>
+        )}
         <div className="@container/transfer mb-4">
           <div className="grid @lg/transfer:grid-cols-2 gap-6">
             <div className="space-y-3">
@@ -162,6 +170,14 @@ export function TransferItem({
             onClick={() => onRemoveTransfer(transfer.id)}
           >
             Remove
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => store.send({ type: "duplicateTransfer", id: transfer.id })}
+            title="Duplicate transfer"
+          >
+            Duplicate
+            <Copy className="h-4 w-4" />
           </Button>
         </div>
 

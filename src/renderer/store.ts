@@ -1,5 +1,9 @@
 import { createStore } from "@xstate/store";
-import { nanoid } from "nanoid";
+import { customAlphabet } from "nanoid";
+
+const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const idLength = 10;
+export const idGenerator = customAlphabet(alphabet, idLength);
 
 export type Transfer = {
   host: string;
@@ -38,6 +42,9 @@ export type TransferState = {
 
 export interface Store {
   transfers: TransferState[];
+  settings: {
+    showTransferIds: boolean;
+  };
 }
 
 type TransferEventMap = {
@@ -94,13 +101,20 @@ type TransferEventMap = {
     isError: boolean;
     timestamp: number;
   };
+  duplicateTransfer: {
+    type: "duplicateTransfer";
+    id: string;
+  };
+  toggleShowTransferIds: {
+    type: "toggleShowTransferIds";
+  };
 };
 
 export const store = createStore<Store, TransferEventMap>(
   {
     transfers: [
       {
-        id: nanoid(),
+        id: idGenerator(),
         source: {
           host: "test1.lamiral.info",
           user: "test1",
@@ -116,6 +130,9 @@ export const store = createStore<Store, TransferEventMap>(
         outputs: [],
       },
     ],
+    settings: {
+      showTransferIds: true,
+    },
   },
   {
     addTransfer: (context, event) => ({
@@ -267,6 +284,32 @@ export const store = createStore<Store, TransferEventMap>(
             }
           : transfer
       ),
+    }),
+    duplicateTransfer: (context, event) => {
+      const transfer = context.transfers.find((t) => t.id === event.id);
+      if (!transfer) return context;
+
+      return {
+        transfers: [
+          ...context.transfers,
+          {
+            ...transfer,
+            id: idGenerator(),
+            status: "idle",
+            createdAt: Date.now(),
+            outputs: [],
+            error: undefined,
+            progress: undefined,
+          },
+        ],
+      };
+    },
+    toggleShowTransferIds: (context) => ({
+      ...context,
+      settings: {
+        ...context.settings,
+        showTransferIds: !context.settings.showTransferIds,
+      },
     }),
   }
 );
