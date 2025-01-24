@@ -1,13 +1,54 @@
 import { useSelector } from '@xstate/store/react';
-import { Copy } from "lucide-react";
+import type { VariantProps } from 'class-variance-authority';
+import { CheckCircle2, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
 import { useDeferredValue } from 'react';
 import { Combobox } from "~/renderer/components/combobox.js";
-import { TransferBadge } from "~/renderer/components/transfer-badge.js";
+import type { badgeVariants } from '~/renderer/components/ui/badge.js';
 import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Progress } from "~/renderer/components/ui/progress.js";
 import { cn } from "~/renderer/lib/utils.js";
-import { store, type TransferState } from "~/renderer/store.js";
+import { store, type TransferState, type TransferStatus } from "~/renderer/store.js";
+
+const statusConfig = {
+  idle: {
+    text: "Start",
+    variant: "default",
+    icon: <Play className="size-4" />,
+    disabled: false,
+    className: '',
+  },
+  syncing: {
+    text: "Syncing",
+    variant: "info",
+    icon: <Loader2 className="animate-spin size-4" />,
+    disabled: true,
+    className: '',
+  },
+  completed: {
+    text: "Completed",
+    variant: "success",
+    icon: <CheckCircle2 className="size-4" />,
+    disabled: true,
+    className: '',
+  },
+  error: {
+    text: "Retry",
+    variant: "outline",
+    icon: <RotateCcw className="size-4" />,
+    disabled: false,
+    className: 'border-destructive hover:bg-destructive/10 hover:text-destructive'
+  },
+} as const satisfies Record<
+  TransferStatus,
+  {
+    text: string;
+    variant: VariantProps<typeof badgeVariants>["variant"];
+    icon: JSX.Element;
+    className: string
+    disabled: boolean
+  }
+>;
 
 interface TransferItemProps {
   transfer: TransferState;
@@ -24,6 +65,10 @@ export function TransferItem({
 }: TransferItemProps) {
   const outputs = useDeferredValue(transfer.outputs)
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds)
+
+  const canStart = transfer.status === "idle" || transfer.status === "error"
+  const config = statusConfig[transfer.status]
+
   return (
     <div>
       <div className="pt-6">
@@ -141,34 +186,42 @@ export function TransferItem({
         </div>
 
         {/* Progress bar for syncing state */}
-        <div className="mb-4 flex gap-2.5 items-center">
-          <TransferBadge status={transfer.status} className="h-10" />
-
-          <div className="w-full mt-0.5">
-            <Progress
-              value={
-                transfer.progress
-                  ? (transfer.progress.current / transfer.progress.total) * 100
-                  : 0
-              }
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              {transfer.progress?.message || "No progress to show"}
-              {transfer.error && (
-                <span className="text-red-500"> Error: {transfer.error}</span>
-              )}
-            </p>
-          </div>
+        <div className="w-full mt-0.5 mb-4">
+          <Progress
+            value={
+              transfer.progress
+                ? (transfer.progress.current / transfer.progress.total) * 100
+                : 0
+            }
+          />
+          <p className="text-sm text-gray-500 mt-1">
+            {transfer.progress?.message || "No progress to show"}
+            {transfer.error && (
+              <span className="text-red-500"> Error: {transfer.error}</span>
+            )}
+          </p>
         </div>
 
         <div className="flex gap-2">
-          {transfer.status === "idle" && (
-            <Button onClick={() => onStartTransfer(transfer.id)}>Start</Button>
-          )}
+
+          <Button
+            onClick={() => {
+              if (!canStart) return
+
+              onStartTransfer(transfer.id);
+            }}
+            variant={config.variant}
+            className={config.className}
+          >
+            {config.icon}
+            <span>{config.text}</span>
+          </Button>
+
           <Button
             variant="destructive"
             onClick={() => onRemoveTransfer(transfer.id)}
           >
+            <X className='size-4' />
             Remove
           </Button>
           <Button
@@ -176,8 +229,8 @@ export function TransferItem({
             onClick={() => store.send({ type: "duplicateTransfer", id: transfer.id })}
             title="Duplicate transfer"
           >
+            <Copy className="size-4" />
             Duplicate
-            <Copy className="h-4 w-4" />
           </Button>
         </div>
 
