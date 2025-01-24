@@ -190,6 +190,7 @@ export function TransferItem({
             {outputs.length > 0 ? (
               outputs.map((output) => (
                 <div
+                  key={output.timestamp}
                   className={cn(
                     output.isError
                       ? "bg-destructive text-destructive-foreground"
