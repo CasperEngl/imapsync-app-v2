@@ -35,6 +35,9 @@ export interface IpcApi {
   getImapsyncPath: () => Promise<string>;
   selectLogDirectory: () => Promise<string>;
   getLogDirectory: () => Promise<string>;
+  exportTransfers: (
+    transfers: TransferState[]
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {

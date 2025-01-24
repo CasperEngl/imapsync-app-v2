@@ -14,6 +14,7 @@ export function SettingsCard() {
   const logDirInputId = useId()
   const imapsyncInputId = useId()
   const queryClient = useQueryClient()
+  const transfers = useSelector(store, snapshot => snapshot.context.transfers)
   const showTransferIds = useSelector(store, (snapshot) => snapshot.context.settings.showTransferIds)
 
   // Query for fetching log directory
@@ -61,6 +62,16 @@ export function SettingsCard() {
 
   const handleToggleTransferIds = () => {
     store.send({ type: "toggleShowTransferIds" });
+  };
+
+  // Add the export transfers handler
+  const handleExportTransfers = async () => {
+    try {
+      await window.api.exportTransfers(transfers);
+      toast.success('Transfers exported successfully');
+    } catch (error) {
+      toast.error('Failed to export transfers');
+    }
   };
 
   return (
@@ -128,6 +139,15 @@ export function SettingsCard() {
             onCheckedChange={handleToggleTransferIds}
           />
           <Label htmlFor="show-transfer-ids">Show Transfer IDs</Label>
+        </div>
+
+        <div className="mt-4">
+          <Button
+            variant="outline"
+            onClick={handleExportTransfers}
+          >
+            Export Transfers
+          </Button>
         </div>
       </CardContent>
     </Card>

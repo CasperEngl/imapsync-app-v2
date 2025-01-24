@@ -1,10 +1,10 @@
 import { spawn } from "child_process";
+import dayjs from "dayjs";
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import Store from "electron-store";
 import * as fs from "fs/promises";
 import * as path from "path";
 import type { TransferState } from "../src/renderer/store.js";
-
 Store.initRenderer();
 
 const store = new Store<{
@@ -123,7 +123,9 @@ async function runImapsync(transfer: TransferState, win: BrowserWindow) {
       "--logdir",
       logDir,
       "--logfile",
-      `transfer_${new Date().toISOString().split("T")[0]}_${transfer.id}.log`,
+      `transfer_${dayjs().format("YYYY-MM-DD_HH-mm-ss")}_${transfer.id}_${
+        transfer.source.user
+      }_to_${transfer.destination.user}.log`,
     ];
 
     const imapsync = spawn(imapsyncPath, args, {
@@ -348,4 +350,26 @@ ipcMain.handle("select-log-directory", async () => {
 
 ipcMain.handle("get-log-directory", async () => {
   return getLogDirectory();
+});
+
+ipcMain.handle("export-transfers", async (event, transfers) => {
+  try {
+    const { filePath } = await dialog.showSaveDialog({
+      title: "Export Transfers",
+      defaultPath: `transfers_${dayjs().format("YYYY-MM-DD_HH-mm-ss")}.json`,
+      filters: [{ name: "JSON", extensions: ["json"] }],
+    });
+
+    if (!filePath) return { success: false };
+
+    await fs.writeFile(filePath, JSON.stringify(transfers));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to export transfers:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
 });
