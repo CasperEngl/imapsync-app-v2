@@ -36,6 +36,9 @@ type TransferEventMap = {
     source: Transfer;
     destination: Transfer;
   };
+  startAll: {
+    type: "startAll";
+  };
   removeTransfer: {
     type: "removeTransfer";
     id: string;
@@ -123,6 +126,50 @@ export const store = createStore<Store, TransferEventMap>(
         },
       ],
     }),
+    startAll: (context) => {
+      const idleTransfers = context.transfers.filter(
+        (t) => t.status === "idle"
+      );
+
+      if (context.isDemoMode) {
+        for (const transfer of idleTransfers) {
+          let current = 0;
+          const total = 100;
+          const interval = setInterval(() => {
+            current += Math.floor(Math.random() * 10) + 1;
+            if (current >= total) {
+              current = total;
+              clearInterval(interval);
+              store.send({ type: "completeTransfer", id: transfer.id });
+            }
+            store.send({
+              type: "updateTransferProgress",
+              id: transfer.id,
+              current,
+              total,
+              message: `Simulating transfer: ${current}%`,
+            });
+          }, 500);
+        }
+      }
+
+      return {
+        ...context,
+        transfers: context.transfers.map((transfer) =>
+          transfer.status === "idle"
+            ? {
+                ...transfer,
+                status: "syncing" as const,
+                progress: {
+                  current: 0,
+                  total: 100,
+                  message: "Starting transfer...",
+                },
+              }
+            : transfer
+        ),
+      };
+    },
     removeTransfer: (context, event) => ({
       transfers: context.transfers.filter(
         (transfer) => transfer.id !== event.id

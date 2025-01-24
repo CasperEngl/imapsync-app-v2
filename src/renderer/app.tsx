@@ -1,12 +1,14 @@
 import { useSelector } from "@xstate/store/react";
+import type { VariantProps } from "class-variance-authority";
 import { ArrowRightLeft } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { match } from "ts-pattern";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { TransferBadge } from "~/renderer/components/transfer-badge.js";
 import { Badge } from "~/renderer/components/ui/badge.js";
-import { Button } from "~/renderer/components/ui/button.js";
+import { Button, buttonVariants } from "~/renderer/components/ui/button.js";
 import {
   Card,
   CardContent,
@@ -20,11 +22,42 @@ import { Progress } from "~/renderer/components/ui/progress.js";
 import { Providers } from "~/renderer/providers.js";
 import { store } from "./store.js";
 
+type StartAllButtonState = {
+  isSyncing: boolean;
+  isAllCompleted: boolean;
+};
+
+type StartAllButtonResult = {
+  variant: VariantProps<typeof buttonVariants>["variant"];
+  text: string;
+};
+
 export function App() {
   const transfers = useSelector(
     store,
     (snapshot) => snapshot.context.transfers
   );
+
+  const isSyncing = transfers.some((t) => t.status === "syncing");
+
+  const isAllCompleted = transfers.every((t) => t.status === "completed");
+
+  const startAllButton = match<
+    StartAllButtonState,
+    StartAllButtonResult
+  >({ isSyncing, isAllCompleted })
+    .with({ isSyncing: true }, () => ({
+      variant: "outline",
+      text: "Running...",
+    }))
+    .with({ isAllCompleted: true }, () => ({
+      variant: "success",
+      text: "Completed",
+    }))
+    .otherwise(() => ({
+      variant: "default",
+      text: "Start all idle",
+    }));
 
   const hostOptions = useMemo(
     () =>
@@ -73,6 +106,10 @@ export function App() {
 
   const handleRemoveTransfer = (id: string) => {
     store.send({ type: "removeTransfer", id });
+  };
+
+  const handleStartAll = () => {
+    store.send({ type: "startAll" });
   };
 
   const handleSourceChange = (field: string, value: string) => {
@@ -128,6 +165,7 @@ export function App() {
         });
 
         toast(`Imported transfer`, {
+          closeButton: true,
           description: (
             <div className="flex flex-col gap-1">
               <div className="text-xs text-muted-foreground">Source</div>
@@ -144,13 +182,12 @@ export function App() {
               </div>
             </div>
           ),
-          position: "top-right",
         });
       }
 
       toast("Transfers imported successfully!", {
-        description: `Imported ${validLines.length} transfers from CSV`,
-        position: "top-right",
+        closeButton: true,
+        description: `Imported ${ validLines.length } transfers from CSV`,
       });
     };
     reader.readAsText(file);
@@ -164,7 +201,7 @@ export function App() {
   return (
     <Providers>
       <div className="relative">
-        <header className="sticky top-0 bg-white shadow py-4">
+        <header className="z-10 sticky top-0 bg-white shadow py-4">
           <div className="container mx-auto flex justify-between items-center">
             <h1 className="text-3xl font-bold">IMAP Sync App</h1>
             <div className="flex items-center gap-2">
@@ -191,6 +228,21 @@ export function App() {
                     Set up a new email synchronization by entering the source
                     and destination server details below
                   </CardDescription>
+
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    className="hidden"
+                    onChange={handleBulkImport}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Import from CSV
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="@container/form">
@@ -258,28 +310,24 @@ export function App() {
                 </CardContent>
                 <CardFooter className="flex gap-2">
                   <Button type="submit">Add Transfer</Button>
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv"
-                    className="hidden"
-                    onChange={handleBulkImport}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Import from CSV
-                  </Button>
                 </CardFooter>
               </form>
             </Card>
 
             {/* Transfer List */}
-            <Card className="@4xl:col-span-3">
-              <CardHeader>
+            <Card className="@4xl:col-span-3 mb-32">
+              <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Existing Transfers</CardTitle>
+
+                <Button
+                  onClick={handleStartAll}
+                  disabled={
+                    transfers.length === 0 || isSyncing || isAllCompleted
+                  }
+                  variant={startAllButton.variant}
+                >
+                  {startAllButton.text}
+                </Button>
               </CardHeader>
               <CardContent className="space-y-4">
                 {transfers.length === 0 ? (
@@ -292,11 +340,6 @@ export function App() {
                     <div key={transfer.id}>
                       {index > 0 && <div className="h-px bg-border my-6" />}
                       <div className="pt-6">
-                        <div className="flex justify-between items-start mb-4">
-                          <h3 className="font-medium">Transfer Details</h3>
-                          <TransferBadge status={transfer.status} />
-                        </div>
-
                         <div className="@container/transfer mb-4">
                           <div className="grid @lg/transfer:grid-cols-2 gap-6">
                             <div className="space-y-3">
@@ -422,26 +465,33 @@ export function App() {
                         </div>
 
                         {/* Progress bar for syncing state */}
-                        <div className="mb-4">
-                          <Progress
-                            value={
-                              transfer.progress
-                                ? (transfer.progress.current /
+                        <div className="mb-4 flex gap-2.5 items-center">
+                          <TransferBadge
+                            status={transfer.status}
+                            className="h-10"
+                          />
+
+                          <div className="w-full mt-0.5">
+                            <Progress
+                              value={
+                                transfer.progress
+                                  ? (transfer.progress.current /
                                     transfer.progress.total) *
                                   100
-                                : 0
-                            }
-                          />
-                          <p className="text-sm text-gray-500 mt-1">
-                            {transfer.progress?.message ||
-                              "No progress to show"}
-                            {transfer.error && (
-                              <span className="text-red-500">
-                                {" "}
-                                Error: {transfer.error}
-                              </span>
-                            )}
-                          </p>
+                                  : 0
+                              }
+                            />
+                            <p className="text-sm text-gray-500 mt-1">
+                              {transfer.progress?.message ||
+                                "No progress to show"}
+                              {transfer.error && (
+                                <span className="text-red-500">
+                                  {" "}
+                                  Error: {transfer.error}
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         </div>
 
                         <div className="flex gap-2">
