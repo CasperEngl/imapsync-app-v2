@@ -7,8 +7,7 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "prebuild": "electron-vite build",
-    "build": "npm run copy-imapsync && electron-vite build",
-    "copy-imapsync": "tsx scripts/copy-imapsync.ts"
+    "build": "electron-vite build"
   },
   "keywords": [],
   "author": "",
