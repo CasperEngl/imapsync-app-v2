@@ -1,6 +1,6 @@
 import { useSelector } from "@xstate/store/react";
 import type { VariantProps } from "class-variance-authority";
-import { ArrowRightLeft } from "lucide-react";
+import { ArrowRightLeft, CircleMinus } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
@@ -347,6 +347,7 @@ export function App() {
                       variant="destructive"
                     >
                       Remove Completed
+                      <CircleMinus className="size-4" />
                     </Button>
                   )}
 
