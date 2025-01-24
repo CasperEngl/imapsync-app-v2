@@ -107,6 +107,12 @@
       ],
       "icon": "assets/icon.ico"
     },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
     "compression": "normal",
     "nsis": {
       "oneClick": false,

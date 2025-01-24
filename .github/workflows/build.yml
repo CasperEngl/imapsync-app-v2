@@ -7,7 +7,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
@@ -23,8 +27,22 @@ jobs:
       - name: Build
         run: bun run build
 
+      # Build for different platforms based on the OS
+      - name: Build Electron App
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            bun run electron-builder --linux
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            bun run electron-builder --win
+          else
+            bun run electron-builder --mac
+          fi
+        shell: bash
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: dist-${{ matrix.os }}
+          path: |
+            dist/
+            release/
