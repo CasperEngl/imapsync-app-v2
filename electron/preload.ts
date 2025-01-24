@@ -38,4 +38,6 @@ contextBridge.exposeInMainWorld("api", {
   },
   selectImapsyncBinary: () => ipcRenderer.invoke("select-imapsync-binary"),
   getImapsyncPath: () => ipcRenderer.invoke("get-imapsync-path"),
+  selectLogDirectory: () => ipcRenderer.invoke("select-log-directory"),
+  getLogDirectory: () => ipcRenderer.invoke("get-log-directory"),
 } satisfies IpcApi);

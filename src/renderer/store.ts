@@ -36,9 +36,8 @@ export type TransferState = {
   outputs: TransferOutput[];
 };
 
-interface Store {
+export interface Store {
   transfers: TransferState[];
-  imapsyncPath: string | null;
 }
 
 type TransferEventMap = {
@@ -88,10 +87,6 @@ type TransferEventMap = {
     message: string;
     progress: number;
   };
-  setImapsyncPath: {
-    type: "setImapsyncPath";
-    path: string | null;
-  };
   addTransferOutput: {
     type: "addTransferOutput";
     id: string;
@@ -121,7 +116,6 @@ export const store = createStore<Store, TransferEventMap>(
         outputs: [],
       },
     ],
-    imapsyncPath: null,
   },
   {
     addTransfer: (context, event) => ({
@@ -256,9 +250,6 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
-    setImapsyncPath: (_context, event) => ({
-      imapsyncPath: event.path,
-    }),
     addTransferOutput: (context, event) => ({
       ...context,
       transfers: context.transfers.map((transfer) =>
@@ -309,7 +300,6 @@ window.api.onTransferError((event, data) => {
 });
 
 window.api.onTransferOutput((event, data) => {
-  console.log("[Store] Transfer output:", data);
   store.send({
     type: "addTransferOutput",
     id: data.id,

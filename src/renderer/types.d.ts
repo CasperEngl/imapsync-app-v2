@@ -33,6 +33,8 @@ export interface IpcApi {
   ) => void;
   selectImapsyncBinary: () => Promise<string>;
   getImapsyncPath: () => Promise<string>;
+  selectLogDirectory: () => Promise<string>;
+  getLogDirectory: () => Promise<string>;
 }
 
 declare global {

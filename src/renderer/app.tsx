@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from "~/renderer/components/ui/card.js";
 import { Input } from "~/renderer/components/ui/input.js";
-import { Providers, queryClient } from "~/renderer/providers.js";
+import { Providers } from "~/renderer/providers.js";
 import { store } from "./store.js";
 
 type StartAllButtonState = {
@@ -30,64 +30,9 @@ type StartAllButtonResult = {
   text: string;
 };
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { SettingsDialog } from '~/renderer/components/settings-dialog.js';
 import { TransferItem } from "~/renderer/components/transfer-item.js";
-import { Skeleton } from '~/renderer/components/ui/skeleton.js';
-
-function ImapsyncBinarySelector() {
-  const imapsyncPathQuery = useQuery({
-    queryKey: ["imapsyncPath"],
-    queryFn: () => window.api.getImapsyncPath(),
-  });
-
-  const selectBinaryMutation = useMutation({
-    mutationFn: async () => {
-      const path = await window.api.selectImapsyncBinary();
-      if (path) {
-        store.send({ type: "setImapsyncPath", path });
-      }
-      return path;
-    },
-    onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : "Failed to upload binary");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['imapsyncPath'] })
-    }
-  });
-
-  const handleSelectBinary = () => {
-    selectBinaryMutation.mutate();
-  };
-
-  return (
-    <div className="p-4 border rounded-lg mb-4">
-      <h2 className="text-lg font-semibold mb-2">imapsync Binary</h2>
-      <div className="space-y-2">
-        {imapsyncPathQuery.isLoading ? (
-          <Skeleton className="h-5 w-full max-w-[300px]" />
-        ) : imapsyncPathQuery.data ? (
-          <div className="text-sm text-muted-foreground">
-            Current path: {imapsyncPathQuery.data}
-          </div>
-        ) : null}
-        <Button
-          onClick={handleSelectBinary}
-          disabled={selectBinaryMutation.isPending}
-        >
-          {selectBinaryMutation.isPending ? "Uploading..." : "Select imapsync Binary"}
-        </Button>
-        {selectBinaryMutation.isError && (
-          <div className="text-red-500 mt-2">
-            {selectBinaryMutation.error instanceof Error
-              ? selectBinaryMutation.error.message
-              : "Failed to upload binary"}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+import { ImapsyncBinarySelector } from '~/renderer/imapsync-binary-selector.js';
 
 export function App() {
   const transfers = useSelector(
@@ -272,6 +217,7 @@ export function App() {
 
         <div className="@container container mx-auto pt-5">
           <ImapsyncBinarySelector />
+          <SettingsDialog />
 
           <div className="grid @4xl:grid-cols-5 gap-6 items-start">
             {/* Add Transfer Form */}

@@ -7,13 +7,39 @@ import type { TransferState } from "../src/renderer/store.js";
 
 Store.initRenderer();
 
-const store = new Store<{ imapsyncPath: string | null }>({
+const store = new Store<{
+  settings: {
+    logDirectory?: string;
+    imapsyncPath: string | null;
+  };
+}>({
   defaults: {
-    imapsyncPath: null,
+    settings: {
+      logDirectory: null,
+      imapsyncPath: null,
+    },
   },
 });
 
-function createWindow(): void {
+async function getLogDirectory(): Promise<string> {
+  // @ts-expect-error Electron Store badly typed
+  const storedPath = store.get("settings.logDirectory");
+  if (storedPath) return storedPath;
+
+  const defaultPath = path.join(app.getPath("userData"), "LOG_imapsync");
+  const exists = await fs
+    .access(defaultPath)
+    .then(() => true)
+    .catch(() => false);
+
+  if (!exists) {
+    await fs.mkdir(defaultPath, { recursive: true });
+  }
+
+  return defaultPath;
+}
+
+async function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -30,6 +56,8 @@ function createWindow(): void {
   } else {
     win.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
+
+  const logDir = await getLogDirectory();
 }
 
 app.whenReady().then(() => {
@@ -57,9 +85,7 @@ function getImapsyncBinaryDir(): string {
 
 function getImapsyncPath(): string {
   // @ts-expect-error Electron Store badly typed
-  const storedPath = store.get("imapsyncPath");
-
-  console.log("storedPath", storedPath);
+  const storedPath = store.get("settings.imapsyncPath");
 
   if (storedPath) {
     return storedPath;
@@ -71,6 +97,7 @@ function getImapsyncPath(): string {
 
 async function runImapsync(transfer: TransferState, win: BrowserWindow) {
   const imapsyncPath = getImapsyncPath();
+  const logDir = await getLogDirectory();
 
   try {
     await fs.access(imapsyncPath);
@@ -94,6 +121,8 @@ async function runImapsync(transfer: TransferState, win: BrowserWindow) {
       transfer.destination.password,
       "--useheader",
       "Message-Id",
+      "--logdir",
+      logDir,
     ];
 
     const imapsync = spawn(imapsyncPath, args, {
@@ -149,9 +178,6 @@ async function runImapsync(transfer: TransferState, win: BrowserWindow) {
         );
         if (totalMatch) {
           totalProgress = parseInt(totalMatch[1] ?? "0", 10);
-
-          console.log("totalProgress", totalProgress);
-          console.log("messageCount", messageCount);
 
           win.webContents.send("transfer-progress", {
             id: transfer.id,
@@ -293,7 +319,7 @@ ipcMain.handle("select-imapsync-binary", async () => {
   await fs.chmod(result.filePaths[0], "755");
 
   // @ts-expect-error Electron Store badly typed
-  store.set("imapsyncPath", result.filePaths[0]);
+  store.set("settings.imapsyncPath", result.filePaths[0]);
 
   return result.filePaths[0];
 });
@@ -301,4 +327,24 @@ ipcMain.handle("select-imapsync-binary", async () => {
 // Add a handler to get the current path
 ipcMain.handle("get-imapsync-path", () => {
   return getImapsyncPath();
+});
+
+ipcMain.handle("select-log-directory", async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openDirectory", "createDirectory"],
+    title: "Select log directory",
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+
+  // @ts-expect-error Electron Store badly typed
+  store.set("settings.logDirectory", result.filePaths[0]);
+
+  return result.filePaths[0];
+});
+
+ipcMain.handle("get-log-directory", async () => {
+  return getLogDirectory();
 });
