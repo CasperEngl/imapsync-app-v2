@@ -75,6 +75,11 @@
     "extraMetadata": {
       "name": "Imapsync App"
     },
+    "icon": "assets/icon.png",
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
+    },
     "mac": {
       "target": [
         {
@@ -85,7 +90,11 @@
           ]
         }
       ],
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "category": "public.app-category.utilities",
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
     },
     "win": {
       "target": [
@@ -96,11 +105,15 @@
             "arm64"
           ]
         }
-      ]
+      ],
+      "icon": "assets/icon.ico",
+      "nsis": {
+        "oneClick": false,
+        "allowToChangeInstallationDirectory": true,
+        "createDesktopShortcut": true,
+        "createStartMenuShortcut": true
+      }
     },
-    "compression": "normal",
-    "dmg": {
-      "sign": false
-    }
+    "compression": "normal"
   }
 }
