@@ -27,16 +27,16 @@ jobs:
         with:
           bun-version: latest
 
-      # Modified cache configuration
+      # Cache configuration with corrected OS naming
       - name: Cache Electron
         uses: actions/cache@v3
         with:
           path: |
             ${{ runner.temp }}/electron
             ${{ runner.temp }}/electron-builder
-          key: ${{ runner.os }}-electron-${{ hashFiles('**/bun.lock') }}
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-electron-
+            ${{ runner.os }}-electron-cache-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
