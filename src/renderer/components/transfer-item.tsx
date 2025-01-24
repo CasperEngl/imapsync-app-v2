@@ -73,8 +73,9 @@ export function TransferItem({
     <div>
       <div className="pt-6">
         {showTransferIds && (
-          <div className="text-lg text-accent-foreground pb-2 font-mono">
-            {transfer.id}
+          <div className="pb-2">
+            <div className="text-xs text-muted-foreground">ID</div>
+            <div className="text-lg font-mono text-accent-foreground">{transfer.id}</div>
           </div>
         )}
         <div className="@container/transfer mb-4">
