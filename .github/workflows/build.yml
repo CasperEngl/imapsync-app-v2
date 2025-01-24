@@ -52,7 +52,7 @@ jobs:
           elif [ "$RUNNER_OS" == "Windows" ]; then
             bun run electron-builder --win
           else
-            bun run electron-builder --mac --x64 --arm64 --compression=maximum
+            bun run electron-builder --mac --x64 --arm64
           fi
         shell: bash
 
