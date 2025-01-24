@@ -137,6 +137,7 @@ export function SettingsCard() {
             id="show-transfer-ids"
             checked={showTransferIds}
             onCheckedChange={handleToggleTransferIds}
+            className="size-5"
           />
           <Label htmlFor="show-transfer-ids">Show Transfer IDs</Label>
         </div>
