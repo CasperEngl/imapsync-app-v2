@@ -125,7 +125,7 @@ export function App() {
   };
 
   const handleRemoveAllCompleted = () => {
-    store.send({ type: "removeAllCompleted" });
+    store.send({ type: "removeAllByStatus", status: 'completed' });
   };
 
   const handleRemoveAll = () => {
