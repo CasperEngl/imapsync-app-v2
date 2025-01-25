@@ -1,7 +1,9 @@
+import { Label } from '@radix-ui/react-label';
 import { useSelector } from "@xstate/store/react";
 import type { VariantProps } from "class-variance-authority";
+import { groupBy } from "lodash-es";
 import { ArrowRightLeft, CircleMinus } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
 import { Combobox } from "~/renderer/components/combobox.js";
@@ -16,8 +18,10 @@ import {
   CardHeader,
   CardTitle,
 } from "~/renderer/components/ui/card.js";
+import { Checkbox } from "~/renderer/components/ui/checkbox.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Providers } from "~/renderer/providers.js";
+import { TransferStatusCard } from '~/renderer/transfer-status-card.js';
 import { idGenerator, store } from "./store.js";
 
 type StartAllButtonState = {
@@ -31,10 +35,16 @@ type StartAllButtonResult = {
 };
 
 export function App() {
+  const replaceAllId = useId()
   const transfers = useSelector(
     store,
     (snapshot) => snapshot.context.transfers
   );
+  const settings = useSelector(
+    store,
+    (snapshot) => snapshot.context.settings
+  );
+  const keyedTransfers = groupBy(transfers, "status");
 
   const isSyncing = transfers.some((transfer) => {
     return transfer.status === "syncing";
@@ -148,6 +158,11 @@ export function App() {
         .slice(1) // Skip header
         .filter((line) => line.trim()); // Filter empty lines
 
+      // If replacing all, remove existing transfers first
+      if (settings.replaceAllOnImport) {
+        store.send({ type: "removeAll" });
+      }
+
       for (const line of validLines) {
         const [
           sourceHost = "",
@@ -197,7 +212,7 @@ export function App() {
 
       toast("Transfers imported successfully!", {
         closeButton: true,
-        description: `Imported ${ validLines.length } transfers from CSV`,
+        description: `${ settings.replaceAllOnImport ? "Replaced" : "Imported" } ${ validLines.length } transfers from CSV`,
       });
     };
     reader.readAsText(file);
@@ -242,9 +257,9 @@ export function App() {
         <div className="@container container mx-auto py-5">
           <SettingsCard />
 
-          <div className="pt-4 grid grid-cols-1 @4xl:grid-cols-5 gap-6 items-start">
+          <div className="pt-4 grid grid-cols-1 @4xl:grid-cols-3 gap-6 items-start">
             {/* Add Transfer Form */}
-            <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-32 @4xl:col-span-2">
+            <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-32 @4xl:col-span-1">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -274,6 +289,18 @@ export function App() {
                     >
                       Import from CSV
                     </Button>
+                    <div className="flex items-center space-x-2 pt-2">
+                      <Checkbox
+                        id={replaceAllId}
+                        checked={settings.replaceAllOnImport}
+                        onCheckedChange={() => store.send({ type: "toggleReplaceAllOnImport" })}
+                      />
+                      <Label
+                        htmlFor={replaceAllId}
+                      >
+                        Replace all transfers on import
+                      </Label>
+                    </div>
                     <CardDescription className="pt-2">
                       The CSV file is expected to contain column headers, so the first line will be skipped
                     </CardDescription>
@@ -350,29 +377,54 @@ export function App() {
             </Card>
 
             {/* Transfer List */}
-            <Card className="@4xl:col-span-3 mb-32">
-              <CardHeader className="flex-row items-center justify-between">
+            <Card className="@4xl:col-span-2 mb-32">
+              <CardHeader className="flex flex-col gap-2">
                 <CardTitle>Existing Transfers</CardTitle>
 
-                <div className="flex gap-2">
-                  {transfers.length > 0 && (
-                    <Button
-                      onClick={handleRemoveAll}
-                      variant="destructive"
-                    >
-                      Remove All
-                      <CircleMinus className="size-4" />
-                    </Button>
-                  )}
+                <div className="grid grid-cols-4 gap-2">
+                  <TransferStatusCard
+                    transfers={keyedTransfers.idle ?? []}
+                    status="idle"
+                  />
+                  <TransferStatusCard
+                    transfers={keyedTransfers.syncing ?? []}
+                    status="syncing"
+                  />
+                  <TransferStatusCard
+                    transfers={keyedTransfers.completed ?? []}
+                    status="completed"
+                  />
+                  <TransferStatusCard
+                    transfers={keyedTransfers.error ?? []}
+                    status="error"
+                  />
+                </div>
 
-                  {isSomeCompleted && (
-                    <Button
-                      onClick={handleRemoveAllCompleted}
-                      variant="destructive"
-                    >
-                      Remove Completed
-                      <CircleMinus className="size-4" />
-                    </Button>
+                <div className="flex gap-2">
+                  {(transfers.length > 0 || isSomeCompleted) && (
+                    <div className="inline-flex">
+                      {transfers.length > 0 && (
+                        <Button
+                          onClick={handleRemoveAll}
+                          variant="destructive"
+                          className={isSomeCompleted ? "rounded-r-none" : ""}
+                        >
+                          Remove All
+                          <CircleMinus className="size-4" />
+                        </Button>
+                      )}
+
+                      {isSomeCompleted && (
+                        <Button
+                          onClick={handleRemoveAllCompleted}
+                          variant="destructive"
+                          className={transfers.length > 0 ? "rounded-l-none border-l border-destructive/50" : ""}
+                        >
+                          Remove Completed
+                          <CircleMinus className="size-4" />
+                        </Button>
+                      )}
+                    </div>
                   )}
 
                   {transfers.length > 0 ? (
