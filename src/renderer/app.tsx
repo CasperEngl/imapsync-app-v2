@@ -54,10 +54,6 @@ export function App() {
     return transfer.status === "completed";
   });
 
-  const isSomeCompleted = transfers.some(transfer => {
-    return transfer.status === 'completed';
-  })
-
   const startAllButton = match<
     StartAllButtonState,
     StartAllButtonResult
@@ -122,10 +118,6 @@ export function App() {
 
   const handleStartAll = () => {
     store.send({ type: "startAll" });
-  };
-
-  const handleRemoveAllCompleted = () => {
-    store.send({ type: "removeAllByStatus", status: 'completed' });
   };
 
   const handleRemoveAll = () => {
@@ -401,30 +393,14 @@ export function App() {
                 </div>
 
                 <div className="flex gap-2">
-                  {(transfers.length > 0 || isSomeCompleted) && (
-                    <div className="inline-flex">
-                      {transfers.length > 0 && (
-                        <Button
-                          onClick={handleRemoveAll}
-                          variant="destructive"
-                          className={isSomeCompleted ? "rounded-r-none" : ""}
-                        >
-                          Remove All
-                          <CircleMinus className="size-4" />
-                        </Button>
-                      )}
-
-                      {isSomeCompleted && (
-                        <Button
-                          onClick={handleRemoveAllCompleted}
-                          variant="destructive"
-                          className={transfers.length > 0 ? "rounded-l-none border-l border-destructive/50" : ""}
-                        >
-                          Remove Completed
-                          <CircleMinus className="size-4" />
-                        </Button>
-                      )}
-                    </div>
+                  {transfers.length > 0 && (
+                    <Button
+                      onClick={handleRemoveAll}
+                      variant="destructive"
+                    >
+                      Remove All
+                      <CircleMinus className="size-4" />
+                    </Button>
                   )}
 
                   {transfers.length > 0 ? (
