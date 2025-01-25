@@ -312,7 +312,8 @@ export const store = createStore({
         transfers: [
           ...context.transfers,
           {
-            ...transfer,
+            source: transfer.source,
+            destination: transfer.destination,
             id: idGenerator(),
             status: "idle" as const,
             createdAt: Date.now(),
