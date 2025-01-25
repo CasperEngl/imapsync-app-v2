@@ -1,4 +1,5 @@
-import { createStore } from "@xstate/store";
+import { createStoreWithProducer } from "@xstate/store";
+import { current, produce } from "immer";
 import { customAlphabet } from "nanoid";
 
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -80,7 +81,7 @@ const storeContext: StoreContext = {
   },
 };
 
-export const store = createStore({
+export const store = createStoreWithProducer(produce, {
   context: storeContext,
   on: {
     addTransfer: (
@@ -90,97 +91,76 @@ export const store = createStore({
         source: Transfer;
         destination: Transfer;
       }
-    ) => ({
-      transfers: [
-        ...context.transfers,
-        {
-          id: event.id,
-          source: event.source,
-          destination: event.destination,
-          status: "idle" as const,
-          createdAt: Date.now(),
-          outputs: [],
-          error: null,
-        },
-      ],
-    }),
+    ) => {
+      context.transfers.push({
+        id: event.id,
+        source: event.source,
+        destination: event.destination,
+        status: "idle" as const,
+        createdAt: Date.now(),
+        outputs: [],
+        error: null,
+      });
+    },
     startAll: (context) => {
       const idleTransfers = context.transfers.filter(
         (t) => t.status === "idle"
       );
+      window.api.startAllTransfers(current(idleTransfers));
 
-      window.api.startAllTransfers(idleTransfers);
-
-      return {
-        ...context,
-        transfers: context.transfers.map((transfer) =>
-          transfer.status === "idle"
-            ? {
-                ...transfer,
-                status: "syncing" as const,
-                error: null,
-                outputs: [],
-                progress: {
-                  current: 0,
-                  total: 100,
-                  message: "Starting transfer...",
-                  progress: 0,
-                },
-              }
-            : transfer
-        ),
-      };
+      for (const transfer of context.transfers) {
+        if (transfer.status === "idle") {
+          transfer.status = "syncing";
+          transfer.error = null;
+          transfer.outputs = [];
+          transfer.progress = {
+            current: 0,
+            total: 100,
+            message: "Starting transfer...",
+            progress: 0,
+          };
+        }
+      }
     },
     removeTransfer: (
       context,
       event: {
         id: string;
       }
-    ) => ({
-      transfers: context.transfers.filter(
-        (transfer) => transfer.id !== event.id
-      ),
-    }),
+    ) => {
+      const index = context.transfers.findIndex((t) => t.id === event.id);
+      if (index !== -1) {
+        context.transfers.splice(index, 1);
+      }
+    },
     updateTransferSource: (
       context,
       event: {
         id: string;
         field: keyof Transfer;
-        value: string;
+        value: unknown;
       }
-    ) => ({
-      transfers: context.transfers.map((transfer) =>
-        transfer.id === event.id
-          ? {
-              ...transfer,
-              source: {
-                ...transfer.source,
-                [event.field]: event.value,
-              },
-            }
-          : transfer
-      ),
-    }),
+    ) => {
+      const transfer = context.transfers.find((t) => t.id === event.id);
+
+      if (transfer && event.field in transfer.source) {
+        transfer.source[event.field] = event.value as never;
+      }
+    },
     updateTransferDestination: (
       context,
       event: {
         id: string;
         field: keyof Transfer;
-        value: string;
+        value: unknown;
       }
-    ) => ({
-      transfers: context.transfers.map((transfer) =>
-        transfer.id === event.id
-          ? {
-              ...transfer,
-              destination: {
-                ...transfer.destination,
-                [event.field]: event.value,
-              },
-            }
-          : transfer
-      ),
-    }),
+    ) => {
+      const transfer = context.transfers.find((t) => t.id === event.id);
+
+      if (transfer && event.field in transfer.destination) {
+        transfer.destination[event.field] = event.value as never;
+      }
+    },
     startTransfer: (
       context,
       event: {
@@ -190,29 +170,19 @@ export const store = createStore({
       const transfer = context.transfers.find((t) => t.id === event.id);
       if (!transfer) {
         console.warn("[Store] Transfer not found:", event.id);
-        return context;
+        return;
       }
 
-      window.api.startTransfer(transfer);
+      window.api.startTransfer(current(transfer));
 
-      return {
-        ...context,
-        transfers: context.transfers.map((transfer) =>
-          transfer.id === event.id
-            ? {
-                ...transfer,
-                status: "syncing" as const,
-                error: null,
-                outputs: [],
-                progress: {
-                  current: 0,
-                  total: 100,
-                  message: "Starting transfer...",
-                  progress: 0,
-                },
-              }
-            : transfer
-        ),
+      transfer.status = "syncing";
+      transfer.error = null;
+      transfer.outputs = [];
+      transfer.progress = {
+        current: 0,
+        total: 100,
+        message: "Starting transfer...",
+        progress: 0,
       };
     },
     completeTransfer: (
@@ -221,16 +191,10 @@ export const store = createStore({
         id: string;
       }
     ) => {
-      return {
-        transfers: context.transfers.map((transfer) =>
-          transfer.id === event.id
-            ? {
-                ...transfer,
-                status: "completed" as const,
-              }
-            : transfer
-        ),
-      };
+      const transfer = context.transfers.find((t) => t.id === event.id);
+      if (transfer) {
+        transfer.status = "completed";
+      }
     },
     transferError: (
       context,
@@ -238,17 +202,13 @@ export const store = createStore({
         id: string;
         error: string;
       }
-    ) => ({
-      transfers: context.transfers.map((transfer) =>
-        transfer.id === event.id
-          ? {
-              ...transfer,
-              status: "error" as const,
-              error: event.error,
-            }
-          : transfer
-      ),
-    }),
+    ) => {
+      const transfer = context.transfers.find((t) => t.id === event.id);
+      if (transfer) {
+        transfer.status = "error";
+        transfer.error = event.error;
+      }
+    },
     updateTransferProgress: (
       context,
       event: {
@@ -258,21 +218,17 @@ export const store = createStore({
         message: string;
         progress: number;
       }
-    ) => ({
-      transfers: context.transfers.map((transfer) =>
-        transfer.id === event.id
-          ? {
-              ...transfer,
-              progress: {
-                current: event.current,
-                total: event.total,
-                message: event.message,
-                progress: event.progress,
-              },
-            }
-          : transfer
-      ),
-    }),
+    ) => {
+      const transfer = context.transfers.find((t) => t.id === event.id);
+      if (transfer) {
+        transfer.progress = {
+          current: event.current,
+          total: event.total,
+          message: event.message,
+          progress: event.progress,
+        };
+      }
+    },
     addTransferOutput: (
       context,
       event: {
@@ -281,24 +237,16 @@ export const store = createStore({
         isError: boolean;
         timestamp: number;
       }
-    ) => ({
-      ...context,
-      transfers: context.transfers.map((transfer) =>
-        transfer.id === event.id
-          ? {
-              ...transfer,
-              outputs: [
-                ...transfer.outputs,
-                {
-                  content: event.content,
-                  isError: event.isError,
-                  timestamp: Date.now(),
-                },
-              ],
-            }
-          : transfer
-      ),
-    }),
+    ) => {
+      const transfer = context.transfers.find((t) => t.id === event.id);
+      if (transfer) {
+        transfer.outputs.push({
+          content: event.content,
+          isError: event.isError,
+          timestamp: Date.now(),
+        });
+      }
+    },
     duplicateTransfer: (
       context,
       event: {
@@ -306,54 +254,39 @@ export const store = createStore({
       }
     ) => {
       const transfer = context.transfers.find((t) => t.id === event.id);
-      if (!transfer) return context;
+      if (!transfer) return;
 
-      return {
-        transfers: [
-          ...context.transfers,
-          {
-            source: transfer.source,
-            destination: transfer.destination,
-            id: idGenerator(),
-            status: "idle" as const,
-            createdAt: Date.now(),
-            outputs: [],
-            error: null,
-            progress: undefined,
-          },
-        ],
-      };
+      context.transfers.push({
+        source: transfer.source,
+        destination: transfer.destination,
+        id: idGenerator(),
+        status: "idle" as const,
+        createdAt: Date.now(),
+        outputs: [],
+        error: null,
+        progress: undefined,
+      });
     },
-    toggleShowTransferIds: (context) => ({
-      ...context,
-      settings: {
-        ...context.settings,
-        showTransferIds: !context.settings.showTransferIds,
-      },
-    }),
-    toggleReplaceAllOnImport: (context) => ({
-      ...context,
-      settings: {
-        ...context.settings,
-        replaceAllOnImport: !context.settings.replaceAllOnImport,
-      },
-    }),
-    removeAllByStatus: (context, event: { status: TransferStatus }) => ({
-      ...context,
-      transfers: context.transfers.filter(
+    toggleShowTransferIds: (context) => {
+      context.settings.showTransferIds = !context.settings.showTransferIds;
+    },
+    toggleReplaceAllOnImport: (context) => {
+      context.settings.replaceAllOnImport =
+        !context.settings.replaceAllOnImport;
+    },
+    removeAllByStatus: (context, event: { status: TransferStatus }) => {
+      context.transfers = context.transfers.filter(
         (transfer) => transfer.status !== event.status
-      ),
-    }),
-    keepAllByStatus: (context, event: { status: TransferStatus }) => ({
-      ...context,
-      transfers: context.transfers.filter(
+      );
+    },
+    keepAllByStatus: (context, event: { status: TransferStatus }) => {
+      context.transfers = context.transfers.filter(
         (transfer) => transfer.status === event.status
-      ),
-    }),
-    removeAll: (context) => ({
-      ...context,
-      transfers: [],
-    }),
+      );
+    },
+    removeAll: (context) => {
+      context.transfers = [];
+    },
   },
 });
 
