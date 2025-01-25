@@ -71,25 +71,40 @@ export function App() {
       text: "Start all idle",
     }));
 
-  const hostOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          transfers
-            .flatMap((transfer) => [
-              transfer.source.host,
-              transfer.destination.host,
-            ])
-            .filter(Boolean)
-        )
-      ).map((host) => ({ label: host, value: host })),
-    [transfers]
-  );
-
   const [newTransfer, setNewTransfer] = useState({
     source: { host: "", user: "", password: "" },
     destination: { host: "", user: "", password: "" },
   });
+
+  const hostOptions = useMemo(
+    () => {
+      const destinationHost = newTransfer.destination.host
+        ? [newTransfer.destination.host]
+        : [];
+      const sourceHost = newTransfer.source.host
+        ? [newTransfer.source.host]
+        : [];
+      const transfersHosts = transfers
+        .flatMap((transfer) => [
+          transfer.source.host,
+          transfer.destination.host,
+        ])
+        .filter(Boolean);
+      const uniqueHosts = Array.from(
+        new Set([
+          ...destinationHost,
+          ...sourceHost,
+          ...transfersHosts,
+        ])
+      );
+
+      return uniqueHosts.map((host) => ({
+        label: host,
+        value: host
+      }));
+    },
+    [transfers, newTransfer]
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
