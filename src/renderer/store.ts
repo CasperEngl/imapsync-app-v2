@@ -40,85 +40,17 @@ export type TransferState = {
   outputs: TransferOutput[];
 };
 
-export interface Store {
+export interface StoreContext {
   transfers: TransferState[];
   settings: {
     showTransferIds: boolean;
+    replaceAllOnImport: boolean;
   };
 }
 
-type TransferEventMap = {
-  addTransfer: {
-    type: "addTransfer";
-    id: string;
-    source: Transfer;
-    destination: Transfer;
-  };
-  startAll: {
-    type: "startAll";
-  };
-  removeTransfer: {
-    type: "removeTransfer";
-    id: string;
-  };
-  updateTransferSource: {
-    type: "updateTransferSource";
-    id: string;
-    field: keyof Transfer;
-    value: string;
-  };
-  updateTransferDestination: {
-    type: "updateTransferDestination";
-    id: string;
-    field: keyof Transfer;
-    value: string;
-  };
-  startTransfer: {
-    type: "startTransfer";
-    id: string;
-  };
-  completeTransfer: {
-    type: "completeTransfer";
-    id: string;
-  };
-  transferError: {
-    type: "transferError";
-    id: string;
-    error: string;
-  };
-  updateTransferProgress: {
-    type: "updateTransferProgress";
-    id: string;
-    current: number;
-    total: number;
-    message: string;
-    progress: number;
-  };
-  addTransferOutput: {
-    type: "addTransferOutput";
-    id: string;
-    content: string;
-    isError: boolean;
-    timestamp: number;
-  };
-  duplicateTransfer: {
-    type: "duplicateTransfer";
-    id: string;
-  };
-  toggleShowTransferIds: {
-    type: "toggleShowTransferIds";
-  };
-  removeAllCompleted: {
-    type: "removeAllCompleted";
-  };
-  removeAll: {
-    type: "removeAll";
-  };
-};
-
 const STORAGE_KEY = "imapsync-store";
 
-function loadPersistedState(): Partial<Store> {
+function loadPersistedState(): Partial<StoreContext> {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -130,7 +62,7 @@ function loadPersistedState(): Partial<Store> {
   return {};
 }
 
-function persistState(state: Store) {
+function persistState(state: StoreContext) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
@@ -138,15 +70,27 @@ function persistState(state: Store) {
   }
 }
 
-export const store = createStore<Store, TransferEventMap>(
-  {
-    transfers: loadPersistedState().transfers || [],
-    settings: loadPersistedState().settings || {
-      showTransferIds: true,
-    },
+const persistedState = loadPersistedState();
+
+const storeContext: StoreContext = {
+  transfers: persistedState.transfers || [],
+  settings: persistedState.settings || {
+    showTransferIds: true,
+    replaceAllOnImport: false,
   },
-  {
-    addTransfer: (context, event) => ({
+};
+
+export const store = createStore({
+  context: storeContext,
+  on: {
+    addTransfer: (
+      context,
+      event: {
+        id: string;
+        source: Transfer;
+        destination: Transfer;
+      }
+    ) => ({
       transfers: [
         ...context.transfers,
         {
@@ -187,12 +131,24 @@ export const store = createStore<Store, TransferEventMap>(
         ),
       };
     },
-    removeTransfer: (context, event) => ({
+    removeTransfer: (
+      context,
+      event: {
+        id: string;
+      }
+    ) => ({
       transfers: context.transfers.filter(
         (transfer) => transfer.id !== event.id
       ),
     }),
-    updateTransferSource: (context, event) => ({
+    updateTransferSource: (
+      context,
+      event: {
+        id: string;
+        field: keyof Transfer;
+        value: string;
+      }
+    ) => ({
       transfers: context.transfers.map((transfer) =>
         transfer.id === event.id
           ? {
@@ -205,7 +161,14 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
-    updateTransferDestination: (context, event) => ({
+    updateTransferDestination: (
+      context,
+      event: {
+        id: string;
+        field: keyof Transfer;
+        value: string;
+      }
+    ) => ({
       transfers: context.transfers.map((transfer) =>
         transfer.id === event.id
           ? {
@@ -218,7 +181,12 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
-    startTransfer: (context, event) => {
+    startTransfer: (
+      context,
+      event: {
+        id: string;
+      }
+    ) => {
       const transfer = context.transfers.find((t) => t.id === event.id);
       if (!transfer) {
         console.warn("[Store] Transfer not found:", event.id);
@@ -247,17 +215,30 @@ export const store = createStore<Store, TransferEventMap>(
         ),
       };
     },
-    completeTransfer: (context, event) => ({
-      transfers: context.transfers.map((transfer) =>
-        transfer.id === event.id
-          ? {
-              ...transfer,
-              status: "completed" as const,
-            }
-          : transfer
-      ),
-    }),
-    transferError: (context, event) => ({
+    completeTransfer: (
+      context,
+      event: {
+        id: string;
+      }
+    ) => {
+      return {
+        transfers: context.transfers.map((transfer) =>
+          transfer.id === event.id
+            ? {
+                ...transfer,
+                status: "completed" as const,
+              }
+            : transfer
+        ),
+      };
+    },
+    transferError: (
+      context,
+      event: {
+        id: string;
+        error: string;
+      }
+    ) => ({
       transfers: context.transfers.map((transfer) =>
         transfer.id === event.id
           ? {
@@ -268,7 +249,16 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
-    updateTransferProgress: (context, event) => ({
+    updateTransferProgress: (
+      context,
+      event: {
+        id: string;
+        current: number;
+        total: number;
+        message: string;
+        progress: number;
+      }
+    ) => ({
       transfers: context.transfers.map((transfer) =>
         transfer.id === event.id
           ? {
@@ -283,7 +273,15 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
-    addTransferOutput: (context, event) => ({
+    addTransferOutput: (
+      context,
+      event: {
+        id: string;
+        content: string;
+        isError: boolean;
+        timestamp: number;
+      }
+    ) => ({
       ...context,
       transfers: context.transfers.map((transfer) =>
         transfer.id === event.id
@@ -301,7 +299,12 @@ export const store = createStore<Store, TransferEventMap>(
           : transfer
       ),
     }),
-    duplicateTransfer: (context, event) => {
+    duplicateTransfer: (
+      context,
+      event: {
+        id: string;
+      }
+    ) => {
       const transfer = context.transfers.find((t) => t.id === event.id);
       if (!transfer) return context;
 
@@ -311,7 +314,7 @@ export const store = createStore<Store, TransferEventMap>(
           {
             ...transfer,
             id: idGenerator(),
-            status: "idle",
+            status: "idle" as const,
             createdAt: Date.now(),
             outputs: [],
             error: null,
@@ -327,18 +330,31 @@ export const store = createStore<Store, TransferEventMap>(
         showTransferIds: !context.settings.showTransferIds,
       },
     }),
-    removeAllCompleted: (context) => ({
+    toggleReplaceAllOnImport: (context) => ({
+      ...context,
+      settings: {
+        ...context.settings,
+        replaceAllOnImport: !context.settings.replaceAllOnImport,
+      },
+    }),
+    removeAllByStatus: (context, event: { status: TransferStatus }) => ({
       ...context,
       transfers: context.transfers.filter(
-        (transfer) => transfer.status !== "completed"
+        (transfer) => transfer.status !== event.status
+      ),
+    }),
+    keepAllByStatus: (context, event: { status: TransferStatus }) => ({
+      ...context,
+      transfers: context.transfers.filter(
+        (transfer) => transfer.status === event.status
       ),
     }),
     removeAll: (context) => ({
       ...context,
       transfers: [],
     }),
-  }
-);
+  },
+});
 
 // Add subscription to persist state changes
 store.subscribe((state) => {
