@@ -218,7 +218,7 @@ export function App() {
   return (
     <Providers>
       <div className="relative">
-        <div className="[app-region:drag] h-4"></div>
+        <div className="[app-region:drag] h-10 select-all bg-accent"></div>
         <header className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky">
           <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
