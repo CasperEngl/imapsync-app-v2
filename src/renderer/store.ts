@@ -103,10 +103,11 @@ export const store = createStoreWithProducer(produce, {
       });
     },
     startAll: (context) => {
-      const idleTransfers = context.transfers.filter(
-        (t) => t.status === "idle"
-      );
-      window.api.startAllTransfers(current(idleTransfers));
+      const idleTransfers = context.transfers
+        .filter((t) => t.status === "idle")
+        .map((transfer) => current(transfer));
+
+      window.api.startAllTransfers(idleTransfers);
 
       for (const transfer of context.transfers) {
         if (transfer.status === "idle") {
@@ -173,6 +174,7 @@ export const store = createStoreWithProducer(produce, {
         return;
       }
 
+      console.log("transfer", transfer);
       window.api.startTransfer(current(transfer));
 
       transfer.status = "syncing";
