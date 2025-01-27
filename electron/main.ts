@@ -22,19 +22,22 @@ const store = new Store<{
 });
 
 async function getLogDirectory(): Promise<string> {
+  const defaultPath = path.join(app.getPath("userData"), "LOG_imapsync");
   // @ts-expect-error Electron Store badly typed
   const storedPath = store.get("settings.logDirectory");
-  if (storedPath) return storedPath;
 
-  const defaultPath = path.join(app.getPath("userData"), "LOG_imapsync");
   const exists = await fs
-    .access(defaultPath)
+    .access(defaultPath ?? storedPath)
     .then(() => true)
     .catch(() => false);
 
   if (!exists) {
-    await fs.mkdir(defaultPath, { recursive: true });
+    await fs.mkdir(defaultPath ?? storedPath, {
+      recursive: true,
+    });
   }
+
+  if (storedPath) return storedPath;
 
   return defaultPath;
 }
@@ -118,8 +121,6 @@ async function runImapsync(transfer: TransferState, win: BrowserWindow) {
       transfer.destination.user,
       "--password2",
       transfer.destination.password,
-      "--useheader",
-      "Message-Id",
       "--logdir",
       logDir,
       "--logfile",
