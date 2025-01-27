@@ -64,7 +64,7 @@ export function App() {
     }))
     .with({ isAllCompleted: true }, () => ({
       variant: "success",
-      text: "Completed",
+      text: "All transfers completed",
     }))
     .otherwise(() => ({
       variant: "default",
@@ -408,16 +408,6 @@ export function App() {
                 </div>
 
                 <div className="flex gap-2">
-                  {transfers.length > 0 && (
-                    <Button
-                      onClick={handleRemoveAll}
-                      variant="destructive"
-                    >
-                      Remove All
-                      <CircleMinus className="size-4" />
-                    </Button>
-                  )}
-
                   {transfers.length > 0 ? (
                     <Button
                       onClick={handleStartAll}
@@ -427,6 +417,16 @@ export function App() {
                       {startAllButton.text}
                     </Button>
                   ) : null}
+
+                  {transfers.length > 0 && (
+                    <Button
+                      onClick={handleRemoveAll}
+                      variant="destructive"
+                    >
+                      Remove All
+                      <CircleMinus className="size-4" />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
