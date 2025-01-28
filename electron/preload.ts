@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 
-import type { IpcApi } from "../src/renderer/types.d.ts";
+import type { IpcApi } from "../ipc.ts";
 
 contextBridge.exposeInMainWorld("api", {
   startTransfer: (transferData) => {

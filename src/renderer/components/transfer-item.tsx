@@ -2,11 +2,12 @@ import type { VariantProps } from "class-variance-authority";
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
 import { useSelector } from "@xstate/store/react";
-import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Pause, Play, RotateCcw, X } from "lucide-react";
-import { useDeferredValue } from "react";
+import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
+import { useDeferredValue, useId } from "react";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
+import { Label } from "~/renderer/components/ui/label.js";
 import { Progress } from "~/renderer/components/ui/progress.js";
 import { cn } from "~/renderer/lib/utils.js";
 import { store } from "~/renderer/store.js";
@@ -79,6 +80,12 @@ export function TransferItem({
   transfer,
   hostOptions,
 }: TransferItemProps) {
+  const sourceHostId = useId();
+  const sourceUserId = useId();
+  const sourcePasswordId = useId();
+  const destinationHostId = useId();
+  const destinationUserId = useId();
+  const destinationPasswordId = useId();
   const outputs = useDeferredValue(transfer.outputs);
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
 
@@ -98,16 +105,23 @@ export function TransferItem({
             <div className="space-y-3">
               <h4 className="font-medium text-sm text-gray-600">Source</h4>
               <div>
-                <label className="block text-sm text-gray-500">Host</label>
+                <Label
+                  className="block text-sm text-gray-500"
+                  htmlFor={sourceHostId}
+                >
+                  Source Host
+                </Label>
                 <Combobox
                   className="w-full"
-                  onValueChange={value =>
+                  id={sourceHostId}
+                  onValueChange={(value) => {
                     store.send({
                       type: "updateTransferSource",
                       id: transfer.id,
                       field: "host",
                       value,
-                    })}
+                    });
+                  }}
                   options={hostOptions}
                   placeholder="Select or enter host..."
                   searchPlaceholder="Search hosts..."
@@ -115,8 +129,14 @@ export function TransferItem({
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500">Username</label>
+                <Label
+                  className="block text-sm text-gray-500"
+                  htmlFor={sourceUserId}
+                >
+                  Source Username
+                </Label>
                 <Input
+                  id={sourceUserId}
                   onChange={(event) => {
                     store.send({
                       type: "updateTransferSource",
@@ -136,8 +156,14 @@ export function TransferItem({
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500">Password</label>
+                <Label
+                  className="block text-sm text-gray-500"
+                  htmlFor={sourcePasswordId}
+                >
+                  Source Password
+                </Label>
                 <Input
+                  id={sourcePasswordId}
                   onChange={(event) => {
                     store.send({
                       type: "updateTransferSource",
@@ -155,16 +181,23 @@ export function TransferItem({
             <div className="space-y-3">
               <h4 className="font-medium text-sm text-gray-600">Destination</h4>
               <div>
-                <label className="block text-sm text-gray-500">Host</label>
+                <Label
+                  className="block text-sm text-gray-500"
+                  htmlFor={destinationHostId}
+                >
+                  Destination Host
+                </Label>
                 <Combobox
                   className="w-full"
-                  onValueChange={value =>
+                  id={destinationHostId}
+                  onValueChange={(value) => {
                     store.send({
                       type: "updateTransferDestination",
                       id: transfer.id,
                       field: "host",
                       value,
-                    })}
+                    });
+                  }}
                   options={hostOptions}
                   placeholder="Select or enter host..."
                   searchPlaceholder="Search hosts..."
@@ -172,8 +205,14 @@ export function TransferItem({
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500">Username</label>
+                <Label
+                  className="block text-sm text-gray-500"
+                  htmlFor={destinationUserId}
+                >
+                  Destination Username
+                </Label>
                 <Input
+                  id={destinationUserId}
                   onChange={(event) => {
                     store.send({
                       type: "updateTransferDestination",
@@ -187,8 +226,14 @@ export function TransferItem({
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-500">Password</label>
+                <Label
+                  className="block text-sm text-gray-500"
+                  htmlFor={destinationPasswordId}
+                >
+                  Destination Password
+                </Label>
                 <Input
+                  id={destinationPasswordId}
                   onChange={(event) => {
                     store.send({
                       type: "updateTransferDestination",

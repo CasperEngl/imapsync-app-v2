@@ -18,11 +18,11 @@ export interface StoreContext {
   };
 }
 
-const STORAGE_KEY = "imapsync-store";
+export const STORAGE_KEY = "imapsync-store";
 
 function loadPersistedState(): Partial<StoreContext> {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored) {
       return JSON.parse(stored);
     }
@@ -35,7 +35,7 @@ function loadPersistedState(): Partial<StoreContext> {
 
 function persistState(state: StoreContext) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
     console.error("[Store] Failed to persist state:", error);
   }
@@ -292,40 +292,41 @@ store.subscribe((state) => {
   persistState(state.context);
 });
 
-// Setup IPC listeners
-window.api.onTransferProgress((event, data) => {
-  store.send({
-    type: "updateTransferProgress",
-    id: data.id,
-    current: data.current,
-    total: data.total,
-    message: data.message,
-    progress: data.progress,
+if (typeof window !== "undefined") {
+  // Setup IPC listeners
+  window.api.onTransferProgress((event, data) => {
+    store.send({
+      type: "updateTransferProgress",
+      id: data.id,
+      current: data.current,
+      total: data.total,
+      message: data.message,
+      progress: data.progress,
+    });
   });
-});
 
-window.api.onTransferComplete((event, data) => {
-  store.send({
-    type: "completeTransfer",
-    id: data.id,
+  window.api.onTransferComplete((event, data) => {
+    store.send({
+      type: "completeTransfer",
+      id: data.id,
+    });
   });
-});
 
-window.api.onTransferError((event, data) => {
-  console.error("[Store] Transfer error:", data);
-  store.send({
-    type: "transferError",
-    id: data.id,
-    error: data.error || "Unknown error",
+  window.api.onTransferError((event, data) => {
+    store.send({
+      type: "transferError",
+      id: data.id,
+      error: data.error || "Unknown error",
+    });
   });
-});
 
-window.api.onTransferOutput((event, data) => {
-  store.send({
-    type: "addTransferOutput",
-    id: data.id,
-    content: data.content,
-    isError: data.isError,
-    timestamp: data.timestamp,
+  window.api.onTransferOutput((event, data) => {
+    store.send({
+      type: "addTransferOutput",
+      id: data.id,
+      content: data.content,
+      isError: data.isError,
+      timestamp: data.timestamp,
+    });
   });
-});
+}

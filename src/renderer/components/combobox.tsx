@@ -24,6 +24,7 @@ export interface ComboboxProps {
   searchPlaceholder?: string;
   emptyText?: string;
   className?: string;
+  id?: string;
 }
 
 export function Combobox({
@@ -34,6 +35,7 @@ export function Combobox({
   searchPlaceholder = "Search...",
   emptyText = "No results found.",
   className,
+  id,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [selectedValue, setSelectedValue] = React.useState(value || "");
@@ -65,6 +67,7 @@ export function Combobox({
             !selectedValue && !open && "text-muted-foreground",
             className,
           )}
+          id={id}
           onFocus={() => {
             if (!preventReopenRef.current) {
               setOpen(true);
