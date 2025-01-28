@@ -308,8 +308,19 @@ export function App() {
                         Replace all transfers on import
                       </Label>
                     </div>
-                    <CardDescription className="pt-2">
-                      The CSV file is expected to contain column headers, so the first line will be skipped
+                    <CardDescription className="pt-2 space-y-2">
+                      <p>The CSV file is expected to contain column headers, so the first line will be skipped.</p>
+                      <details>
+                        <summary>Example import.csv file:</summary>
+                        <pre className="break-all whitespace-pre-wrap text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                          <div>source_host,source_user,source_password,destination_host,destination_user,destination_password</div>
+                          <div>imap.example.com,user1,password1,imap.example.com,user1,password1</div>
+                          <div>imap.example.com,user2,password2,imap.example.com,user2,password2</div>
+                          <div>imap.example.com,user3,password3,imap.example.com,user3,password3</div>
+                          <div>imap.example.com,user4,password4,imap.example.com,user4,password4</div>
+                          <div>imap.example.com,user5,password5,imap.example.com,user5,password5</div>
+                        </pre>
+                      </details>
                     </CardDescription>
                   </div>
                 </CardHeader>
