@@ -36,6 +36,7 @@ type StartAllButtonResult = {
 
 export function App() {
   const replaceAllId = useId()
+  const showTransferIds = useSelector(store, (snapshot) => snapshot.context.settings.showTransferIds)
   const transfers = useSelector(
     store,
     (snapshot) => snapshot.context.transfers
@@ -230,6 +231,10 @@ export function App() {
     }
   };
 
+  const handleToggleTransferIds = () => {
+    store.send({ type: "toggleShowTransferIds" });
+  };
+
   return (
     <Providers>
       <div className="relative">
@@ -397,8 +402,6 @@ export function App() {
             {/* Transfer List */}
             <Card className="@4xl:col-span-2 mb-32">
               <CardHeader className="flex flex-col gap-2">
-                <CardTitle>Existing Transfers</CardTitle>
-
                 <div className="grid grid-cols-4 gap-2">
                   <TransferStatusCard
                     transfers={keyedTransfers.idle ?? []}
@@ -438,6 +441,16 @@ export function App() {
                       <CircleMinus className="size-4" />
                     </Button>
                   )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="show-transfer-ids"
+                    checked={showTransferIds}
+                    onCheckedChange={handleToggleTransferIds}
+                    className="size-5"
+                  />
+                  <Label htmlFor="show-transfer-ids">Show Transfer IDs</Label>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
