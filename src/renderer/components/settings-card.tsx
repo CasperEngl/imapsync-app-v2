@@ -4,7 +4,6 @@ import { useId } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/renderer/components/ui/button.js'
 import { Card, CardContent, CardHeader, CardTitle } from '~/renderer/components/ui/card.js'
-import { Checkbox } from '~/renderer/components/ui/checkbox.js'
 import { Input } from '~/renderer/components/ui/input.js'
 import { Label } from '~/renderer/components/ui/label.js'
 import { Skeleton } from '~/renderer/components/ui/skeleton.js'
@@ -15,7 +14,6 @@ export function SettingsCard() {
   const imapsyncInputId = useId()
   const queryClient = useQueryClient()
   const transfers = useSelector(store, snapshot => snapshot.context.transfers)
-  const showTransferIds = useSelector(store, (snapshot) => snapshot.context.settings.showTransferIds)
 
   // Query for fetching log directory
   const logDirectoryQuery = useQuery({
@@ -58,10 +56,6 @@ export function SettingsCard() {
 
   const handleSelectBinary = () => {
     selectBinaryMutation.mutate();
-  };
-
-  const handleToggleTransferIds = () => {
-    store.send({ type: "toggleShowTransferIds" });
   };
 
   // Add the export transfers handler
@@ -130,16 +124,6 @@ export function SettingsCard() {
                 : "Failed to upload binary"}
             </div>
           )}
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="show-transfer-ids"
-            checked={showTransferIds}
-            onCheckedChange={handleToggleTransferIds}
-            className="size-5"
-          />
-          <Label htmlFor="show-transfer-ids">Show Transfer IDs</Label>
         </div>
 
         <div className="mt-4">
