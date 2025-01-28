@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Imapsync GUI",
   "keywords": [],
-  "license": "ISC",
+  "license": "SEE LICENSE IN LICENSE.md",
   "author": "Casper Engelmann <me@casperengelmann.com>",
   "type": "module",
   "main": "dist/main/main.js",
