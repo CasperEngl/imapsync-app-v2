@@ -1,23 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useSelector } from '@xstate/store/react'
 import { useId } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/renderer/components/ui/button.js'
 import { Card, CardContent, CardHeader, CardTitle } from '~/renderer/components/ui/card.js'
-import { Checkbox } from '~/renderer/components/ui/checkbox.js'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '~/renderer/components/ui/dropdown-menu.js'
 import { Input } from '~/renderer/components/ui/input.js'
 import { Label } from '~/renderer/components/ui/label.js'
 import { Skeleton } from '~/renderer/components/ui/skeleton.js'
-import { store } from '~/renderer/store.js'
 
 export function SettingsCard() {
-  const exportWithStateId = useId()
   const logDirInputId = useId()
   const imapsyncInputId = useId()
   const queryClient = useQueryClient()
-  const transfers = useSelector(store, snapshot => snapshot.context.transfers)
-  const exportWithState = useSelector(store, snapshot => snapshot.context.settings.exportWithState)
+
   // Query for fetching log directory
   const logDirectoryQuery = useQuery({
     queryKey: ['logDirectory'],
@@ -59,22 +53,6 @@ export function SettingsCard() {
 
   const handleSelectBinary = () => {
     selectBinaryMutation.mutate();
-  };
-
-  // Add the export transfers handler
-  const handleExportTransfers = async (options: { exportAs: "json" | "csv" }) => {
-    try {
-      const { success } = await window.api.exportTransfers(transfers, {
-        exportAs: options.exportAs,
-        withState: exportWithState,
-      });
-
-      if (success) {
-        toast.success('Transfers exported successfully');
-      }
-    } catch (error) {
-      toast.error('Failed to export transfers');
-    }
   };
 
   return (
@@ -133,30 +111,6 @@ export function SettingsCard() {
                 : "Failed to upload binary"}
             </div>
           )}
-        </div>
-
-        <div className="mt-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Export Transfers</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-(--radix-popper-anchor-width)">
-              <DropdownMenuItem onClick={() => handleExportTransfers({ exportAs: "json" })}>
-                Export as JSON
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExportTransfers({ exportAs: "csv" })}>
-                Export as CSV
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div className="flex items-center gap-2 mt-2">
-            <Checkbox
-              id={exportWithStateId}
-              checked={exportWithState}
-              onCheckedChange={() => store.send({ type: "toggleExportWithState" })}
-            />
-            <Label htmlFor={exportWithStateId}>Export with transfer state</Label>
-          </div>
         </div>
       </CardContent>
     </Card>

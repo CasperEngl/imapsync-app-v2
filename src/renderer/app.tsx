@@ -1,5 +1,4 @@
 import type { VariantProps } from "class-variance-authority";
-import { useMeasure } from "react-use";
 import type { buttonVariants } from "~/renderer/components/ui/button.js";
 
 import { Label } from "@radix-ui/react-label";
@@ -7,6 +6,7 @@ import { useSelector } from "@xstate/store/react";
 import { groupBy } from "lodash-es";
 import { ArrowRightLeft, CircleMinus } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
+import { useMeasure } from "react-use";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
 import { Combobox } from "~/renderer/components/combobox.js";
@@ -22,12 +22,7 @@ import {
   CardTitle,
 } from "~/renderer/components/ui/card.js";
 import { Checkbox } from "~/renderer/components/ui/checkbox.js";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/renderer/components/ui/dropdown-menu.js";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Providers } from "~/renderer/providers.js";
 import { TransferStatusCard } from "~/renderer/transfer-status-card.js";
@@ -48,7 +43,9 @@ export interface StartAllButtonResult {
   text: string;
 }
 
-function ImportDescription({ transfer }: {
+function ImportDescription({
+  transfer,
+}: {
   transfer: {
     source: Transfer;
     destination: Transfer;
@@ -74,17 +71,22 @@ function ImportDescription({ transfer }: {
 
 export function App() {
   const [headerRef, headerMeasure] = useMeasure<HTMLDivElement>();
+  const exportWithStateId = useId();
   const showTransferIdsId = useId();
   const replaceAllId = useId();
-  const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
+  const exportWithState = useSelector(
+    store,
+    snapshot => snapshot.context.settings.exportWithState,
+  );
+  const showTransferIds = useSelector(
+    store,
+    snapshot => snapshot.context.settings.showTransferIds,
+  );
   const transfers = useSelector(
     store,
     snapshot => snapshot.context.transfers,
   );
-  const settings = useSelector(
-    store,
-    snapshot => snapshot.context.settings,
-  );
+  const settings = useSelector(store, snapshot => snapshot.context.settings);
   const keyedTransfers = groupBy(transfers, "status");
 
   const isSyncing = transfers.some((transfer) => {
@@ -95,10 +97,10 @@ export function App() {
     return transfer.status === "completed";
   });
 
-  const startAllButton = match<
-    StartAllButtonState,
-    StartAllButtonResult
-  >({ isSyncing, isAllCompleted })
+  const startAllButton = match<StartAllButtonState, StartAllButtonResult>({
+    isSyncing,
+    isAllCompleted,
+  })
     .with({ isSyncing: true }, () => ({
       variant: "outline",
       text: "Running...",
@@ -117,35 +119,23 @@ export function App() {
     destination: { host: "", user: "", password: "" },
   });
 
-  const hostOptions = useMemo(
-    () => {
-      const destinationHost = newTransfer.destination.host
-        ? [newTransfer.destination.host]
-        : [];
-      const sourceHost = newTransfer.source.host
-        ? [newTransfer.source.host]
-        : [];
-      const transfersHosts = transfers
-        .flatMap(transfer => [
-          transfer.source.host,
-          transfer.destination.host,
-        ])
-        .filter(Boolean);
-      const uniqueHosts = Array.from(
-        new Set([
-          ...destinationHost,
-          ...sourceHost,
-          ...transfersHosts,
-        ]),
-      );
+  const hostOptions = useMemo(() => {
+    const destinationHost = newTransfer.destination.host
+      ? [newTransfer.destination.host]
+      : [];
+    const sourceHost = newTransfer.source.host ? [newTransfer.source.host] : [];
+    const transfersHosts = transfers
+      .flatMap(transfer => [transfer.source.host, transfer.destination.host])
+      .filter(Boolean);
+    const uniqueHosts = Array.from(
+      new Set([...destinationHost, ...sourceHost, ...transfersHosts]),
+    );
 
-      return uniqueHosts.map(host => ({
-        label: host,
-        value: host,
-      }));
-    },
-    [transfers, newTransfer],
-  );
+    return uniqueHosts.map(host => ({
+      label: host,
+      value: host,
+    }));
+  }, [transfers, newTransfer]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -243,7 +233,8 @@ export function App() {
       } catch (error) {
         toast.error("Failed to import transfers", {
           closeButton: true,
-          description: error instanceof Error ? error.message : "Invalid file format",
+          description:
+            error instanceof Error ? error.message : "Invalid file format",
         });
       }
     };
@@ -259,6 +250,21 @@ export function App() {
     store.send({ type: "toggleShowTransferIds" });
   };
 
+  const handleExportTransfers = async (options: { exportAs: "json" | "csv" }) => {
+    try {
+      const { success } = await window.api.exportTransfers(transfers, {
+        exportAs: options.exportAs,
+        withState: exportWithState,
+      });
+
+      if (success) {
+        toast.success("Transfers exported successfully");
+      }
+    } catch {
+      toast.error("Failed to export transfers");
+    }
+  };
+
   const headerHeightStyle = useMemo(() => {
     return {
       "--header-height": `calc(${headerMeasure.height + headerMeasure.top}px + 2rem)`,
@@ -269,7 +275,10 @@ export function App() {
     <Providers>
       <div className="relative">
         <div className="[app-region:drag] h-10 select-all bg-accent"></div>
-        <header className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky" ref={headerRef}>
+        <header
+          className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky"
+          ref={headerRef}
+        >
           <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
 
@@ -281,18 +290,21 @@ export function App() {
                 href="https://imapsync.lamiral.info/"
                 onClick={(e) => {
                   e.preventDefault();
-                  void window.api.openExternalUrl("https://imapsync.lamiral.info/");
+                  void window.api.openExternalUrl(
+                    "https://imapsync.lamiral.info/",
+                  );
                 }}
                 rel="noopener noreferrer"
                 target="_blank"
-
               >
                 imapsync by Gilles Lamiral
               </a>
             </div>
 
             <p className="text-sm text-muted-foreground mt-1">
-              This is a GUI frontend for imapsync. All email transfer functionality is provided by the imapsync tool created by Gilles Lamiral.
+              This is a GUI frontend for imapsync. All email transfer
+              functionality is provided by the imapsync tool created by Gilles
+              Lamiral.
             </p>
           </div>
         </header>
@@ -365,44 +377,60 @@ export function App() {
                       <Checkbox
                         checked={settings.replaceAllOnImport}
                         id={replaceAllId}
-                        onCheckedChange={() => store.send({ type: "toggleReplaceAllOnImport" })}
+                        onCheckedChange={() =>
+                          store.send({ type: "toggleReplaceAllOnImport" })}
                       />
-                      <Label
-                        htmlFor={replaceAllId}
-                      >
+                      <Label htmlFor={replaceAllId}>
                         Replace all transfers on import
                       </Label>
                     </div>
                     <CardDescription className="pt-2 space-y-2">
-                      <p>The CSV file is expected to contain column headers, so the first line will be skipped.</p>
+                      <p>
+                        The CSV file is expected to contain column headers, so
+                        the first line will be skipped.
+                      </p>
                       <details>
                         <summary>Example import files:</summary>
                         <div className="space-y-4">
                           <div>
-                            <h4 className="text-sm font-medium mb-1">CSV Format (import.csv):</h4>
+                            <h4 className="text-sm font-medium mb-1">
+                              CSV Format (import.csv):
+                            </h4>
                             <pre className="break-all whitespace-pre-wrap text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                              <div>source_host,source_user,source_password,destination_host,destination_user,destination_password</div>
-                              <div>imap.example.com,user1,password1,imap.example.com,user1,password1</div>
-                              <div>imap.example.com,user2,password2,imap.example.com,user2,password2</div>
+                              <div>
+                                source_host,source_user,source_password,destination_host,destination_user,destination_password
+                              </div>
+                              <div>
+                                imap.example.com,user1,password1,imap.example.com,user1,password1
+                              </div>
+                              <div>
+                                imap.example.com,user2,password2,imap.example.com,user2,password2
+                              </div>
                             </pre>
                           </div>
                           <div>
-                            <h4 className="text-sm font-medium mb-1">JSON Format (import.json):</h4>
+                            <h4 className="text-sm font-medium mb-1">
+                              JSON Format (import.json):
+                            </h4>
                             <pre className="break-all whitespace-pre-wrap text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                              {JSON.stringify([
-                                {
-                                  source: {
-                                    host: "imap.example.com",
-                                    user: "user1",
-                                    password: "password1",
+                              {JSON.stringify(
+                                [
+                                  {
+                                    source: {
+                                      host: "imap.example.com",
+                                      user: "user1",
+                                      password: "password1",
+                                    },
+                                    destination: {
+                                      host: "imap.example.com",
+                                      user: "user1",
+                                      password: "password1",
+                                    },
                                   },
-                                  destination: {
-                                    host: "imap.example.com",
-                                    user: "user1",
-                                    password: "password1",
-                                  },
-                                },
-                              ], null, 2)}
+                                ],
+                                null,
+                                2,
+                              )}
                             </pre>
                           </div>
                         </div>
@@ -510,23 +538,54 @@ export function App() {
                     : null}
 
                   {transfers.length > 0 && (
-                    <Button
-                      onClick={handleRemoveAll}
-                      variant="destructive"
-                    >
+                    <Button onClick={handleRemoveAll} variant="destructive">
                       Remove All
                       <CircleMinus className="size-4" />
                     </Button>
                   )}
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">Export Transfers</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-(--radix-popper-anchor-width)">
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleExportTransfers({ exportAs: "json" })}
+                      >
+                        Export as JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleExportTransfers({ exportAs: "csv" })}
+                      >
+                        Export as CSV
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
-                <div className="flex items-center gap-2 mt-2">
-                  <Checkbox
-                    checked={showTransferIds}
-                    id={showTransferIdsId}
-                    onCheckedChange={handleToggleTransferIds}
-                  />
-                  <Label htmlFor={showTransferIdsId}>Show Transfer IDs</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mt-2 break-all">
+                    <Checkbox
+                      checked={exportWithState}
+                      id={exportWithStateId}
+                      onCheckedChange={() => {
+                        store.send({ type: "toggleExportWithState" });
+                      }}
+                    />
+                    <Label htmlFor={exportWithStateId}>
+                      Export with transfer state
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Checkbox
+                      checked={showTransferIds}
+                      id={showTransferIdsId}
+                      onCheckedChange={handleToggleTransferIds}
+                    />
+                    <Label htmlFor={showTransferIdsId}>Show Transfer IDs</Label>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
