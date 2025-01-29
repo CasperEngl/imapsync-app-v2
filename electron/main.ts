@@ -137,7 +137,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     let totalProgress = 0;
     let messageCount = 0;
     let currentFolder = "";
-    let currentStage = "Initializing";
 
     imapsync.stdout.setEncoding("utf8");
 
@@ -160,7 +159,7 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         output = output.slice(newlineIndex + 1);
 
         // Track folder changes
-        const folderMatch = line.match(/Host[12]: Folder \[(.*?)\]/);
+        const folderMatch = line.match(/Host\d: Folder \[(.*?)\]/);
         if (folderMatch) {
           currentFolder = folderMatch[1];
           win.webContents.send("transfer-progress", {
@@ -175,25 +174,41 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
           });
         }
 
-        // Track total message count
-        const totalMatch = line.match(
-          /Host2: folder \[.*?\] has (\d+) messages/,
-        );
-        if (totalMatch) {
-          totalProgress = Number.parseInt(totalMatch[1] ?? "0", 10);
-
+        // Track total folders
+        const folderCountMatch = line.match(/Host1 Nb folders:\s+(\d+) folders/);
+        if (folderCountMatch) {
+          const totalFolders = Number.parseInt(folderCountMatch[1], 10);
           win.webContents.send("transfer-progress", {
             id: transfer.id,
-            current: messageCount,
-            total: totalProgress,
-            message: `Found ${totalProgress} messages to transfer`,
+            current: 0,
+            total: totalFolders,
+            message: `Found ${totalFolders} folders to process`,
+            progress: 0,
+          });
+        }
+
+        // Track total messages
+        const messageCountMatch = line.match(/Host1 Nb messages:\s+(\d+) messages/);
+        if (messageCountMatch) {
+          const totalMessages = Number.parseInt(messageCountMatch[1], 10);
+          totalProgress = totalMessages; // Update the existing totalProgress variable
+          win.webContents.send("transfer-progress", {
+            id: transfer.id,
+            current: 0,
+            total: totalMessages,
+            message: `Found ${totalMessages} messages to transfer`,
             progress: 0,
           });
         }
 
         // Track individual message transfers
-        if (line.includes("Message ID")) {
-          messageCount++;
+        const messageProgressMatch = line.match(/(\d+)\/(\d+) msgs left/);
+        if (messageProgressMatch) {
+          const [, remainingStr, totalStr] = messageProgressMatch;
+          const remaining = Number.parseInt(remainingStr, 10);
+          const total = Number.parseInt(totalStr, 10);
+          messageCount = total - remaining;
+          totalProgress = total;
 
           if (totalProgress > 0) {
             const progress = Math.round((messageCount / totalProgress) * 100);
@@ -201,7 +216,9 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
               id: transfer.id,
               current: messageCount,
               total: totalProgress,
-              message: `Transferring emails (${currentFolder}): ${messageCount}/${totalProgress}`,
+              message: currentFolder
+                ? `Transferring emails (${currentFolder}): ${messageCount} / ${totalProgress}`
+                : `Transferring emails: ${messageCount} / ${totalProgress}`,
               progress,
             });
           }
@@ -209,21 +226,19 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
 
         // Track connection stages
         if (line.includes("Connection on host1")) {
-          currentStage = "Connecting to source server";
           win.webContents.send("transfer-progress", {
             id: transfer.id,
             current: 0,
             total: totalProgress,
-            message: currentStage,
+            message: "Connecting to source server",
             progress: 0,
           });
         } else if (line.includes("Connection on host2")) {
-          currentStage = "Connecting to destination server";
           win.webContents.send("transfer-progress", {
             id: transfer.id,
             current: 0,
             total: totalProgress,
-            message: currentStage,
+            message: "Connecting to destination server",
             progress: 0,
           });
         }
@@ -324,7 +339,7 @@ async function asyncPool<T, U>(
 }
 
 ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState[]) => {
-  const CONCURRENT_TRANSFERS = 1; // Adjust this number based on system capabilities
+  const CONCURRENT_TRANSFERS = 3;
 
   await asyncPool(
     CONCURRENT_TRANSFERS,
