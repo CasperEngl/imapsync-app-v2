@@ -1,5 +1,4 @@
 import antfu from "@antfu/eslint-config";
-import pluginTailwind from "eslint-plugin-tailwindcss";
 
 export default antfu(
   {
@@ -16,6 +15,7 @@ export default antfu(
             propElementValues: "always",
           },
         ],
+        "style/template-curly-spacing": ["error", "never"],
         "style/padding-line-between-statements": [
           "error",
           {
@@ -80,16 +80,6 @@ export default antfu(
       "antfu/if-newline": "off",
     },
   },
-  // Tailwindcss config
-  pluginTailwind.configs["flat/recommended"],
-  {
-    name: "franklin/tailwindcss/settings",
-    settings: {
-      tailwindcss: {
-        callees: ["classnames", "clsx", "ctl", "cn", "cva", "cx", "twMerge"],
-      },
-    },
-  }
 )
   .overrides({
     "antfu/jsdoc/rules": {
