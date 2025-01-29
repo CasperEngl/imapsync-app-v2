@@ -1,4 +1,5 @@
 import type { VariantProps } from "class-variance-authority";
+import { useMeasure } from "react-use";
 import type { buttonVariants } from "~/renderer/components/ui/button.js";
 
 import { Label } from "@radix-ui/react-label";
@@ -72,6 +73,7 @@ function ImportDescription({ transfer }: {
 }
 
 export function App() {
+  const [headerRef, headerMeasure] = useMeasure<HTMLDivElement>();
   const showTransferIdsId = useId();
   const replaceAllId = useId();
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
@@ -257,11 +259,17 @@ export function App() {
     store.send({ type: "toggleShowTransferIds" });
   };
 
+  const headerHeightStyle = useMemo(() => {
+    return {
+      "--header-height": `calc(${headerMeasure.height + headerMeasure.top}px + 2rem)`,
+    } as React.CSSProperties;
+  }, [headerMeasure.height, headerMeasure.top]);
+
   return (
     <Providers>
       <div className="relative">
         <div className="[app-region:drag] h-10 select-all bg-accent"></div>
-        <header className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky">
+        <header className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky" ref={headerRef}>
           <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
 
@@ -292,9 +300,13 @@ export function App() {
         <div className="@container container mx-auto py-5">
           <SettingsCard />
 
-          <div className="pt-4 flex flex-wrap gap-6 items-start">
+          <div className="grid grid-cols-1 @2xl:grid-cols-2 @4xl:grid-cols-3 pt-4 gap-6 items-start">
             {/* Add Transfer Form */}
-            <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-32 shrink max-w-[300px]">
+            <Card
+              asChild
+              className="[@media(min-height:512px)]:@2xl:sticky top-(--header-height)"
+              style={headerHeightStyle}
+            >
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -463,9 +475,9 @@ export function App() {
             </Card>
 
             {/* Transfer List */}
-            <Card className="flex-1">
-              <CardHeader className="flex flex-col gap-2">
-                <div className="grid grid-cols-4 gap-2">
+            <Card className="@4xl:col-span-2">
+              <CardHeader className="@container/transfer-status-cards flex flex-col gap-2">
+                <div className="grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-4 gap-2">
                   <TransferStatusCard
                     status="idle"
                     transfers={keyedTransfers.idle ?? []}
