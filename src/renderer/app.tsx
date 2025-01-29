@@ -1,18 +1,17 @@
-import type { VariantProps } from "class-variance-authority"
-import type { buttonVariants } from "~/renderer/components/ui/button.js"
+import type { VariantProps } from "class-variance-authority";
+import type { buttonVariants } from "~/renderer/components/ui/button.js";
 
-import { Label } from "@radix-ui/react-label"
-import { useSelector } from "@xstate/store/react"
-import { groupBy } from "lodash-es"
-import { ArrowRightLeft, CircleMinus } from "lucide-react"
-import { useId, useMemo, useRef, useState } from "react"
-import { toast } from "sonner"
-import { match } from "ts-pattern"
-import * as v from "valibot"
-import { Combobox } from "~/renderer/components/combobox.js"
-import { SettingsCard } from "~/renderer/components/settings-card.js"
-import { TransferItem } from "~/renderer/components/transfer-item.js"
-import { Button } from "~/renderer/components/ui/button.js"
+import { Label } from "@radix-ui/react-label";
+import { useSelector } from "@xstate/store/react";
+import { groupBy } from "lodash-es";
+import { ArrowRightLeft, CircleMinus } from "lucide-react";
+import { useId, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { match } from "ts-pattern";
+import { Combobox } from "~/renderer/components/combobox.js";
+import { SettingsCard } from "~/renderer/components/settings-card.js";
+import { TransferItem } from "~/renderer/components/transfer-item.js";
+import { Button } from "~/renderer/components/ui/button.js";
 import {
   Card,
   CardContent,
@@ -20,37 +19,39 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "~/renderer/components/ui/card.js"
-import { Checkbox } from "~/renderer/components/ui/checkbox.js"
+} from "~/renderer/components/ui/card.js";
+import { Checkbox } from "~/renderer/components/ui/checkbox.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "~/renderer/components/ui/dropdown-menu.js"
-import { Input } from "~/renderer/components/ui/input.js"
-import { Providers } from "~/renderer/providers.js"
-import { TransferStatusCard } from "~/renderer/transfer-status-card.js"
+} from "~/renderer/components/ui/dropdown-menu.js";
+import { Input } from "~/renderer/components/ui/input.js";
+import { Providers } from "~/renderer/providers.js";
+import { TransferStatusCard } from "~/renderer/transfer-status-card.js";
+import { convertCsvToTransfers } from "~/renderer/utils/convert-csv-to-transfers.js";
+import { idGenerator } from "~/renderer/utils/id.js";
 
-import type { type Transfer, TransferState, TransferWithState } from "./schemas.js"
+import type { Transfer, TransferWithState } from "./schemas.js";
 
-import { idGenerator, store } from "./store.js"
+import { store } from "./store.js";
 
-interface StartAllButtonState {
-  isSyncing: boolean
-  isAllCompleted: boolean
+export interface StartAllButtonState {
+  isSyncing: boolean;
+  isAllCompleted: boolean;
 }
 
-interface StartAllButtonResult {
-  variant: VariantProps<typeof buttonVariants>["variant"]
-  text: string
+export interface StartAllButtonResult {
+  variant: VariantProps<typeof buttonVariants>["variant"];
+  text: string;
 }
 
 function ImportDescription({ transfer }: {
   transfer: {
-    source: Transfer
-    destination: Transfer
-  }
+    source: Transfer;
+    destination: Transfer;
+  };
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -67,120 +68,30 @@ function ImportDescription({ transfer }: {
         <span className="font-medium">{transfer.destination.host}</span>
       </div>
     </div>
-  )
-}
-
-function parseCsvLine(line: string): string[] {
-  const values: string[] = []
-  let currentValue = ""
-  let insideQuotes = false
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i]
-
-    if (char === "\"") {
-      if (i + 1 < line.length && line[i + 1] === "\"") {
-        // Handle escaped quotes
-        currentValue += "\""
-        i++ // Skip next quote
-      } else {
-        // Toggle quote state
-        insideQuotes = !insideQuotes
-      }
-    } else if (char === "," && !insideQuotes) {
-      // End of field
-      values.push(currentValue)
-      currentValue = ""
-    } else {
-      currentValue += char
-    }
-  }
-
-  // Push the last value
-  values.push(currentValue)
-
-  return values
-}
-
-function convertCsvToTransfers(csvText: string): TransferWithState[] {
-  const lines = csvText.split("\n").filter(line => line.trim())
-  if (lines.length < 2) {
-    throw new Error("CSV file must contain headers and at least one transfer")
-  }
-
-  return lines.slice(1).map((line) => {
-    const values = parseCsvLine(line).map((value, index) => {
-      if (index > 5) {
-        console.log("value", value)
-
-        return v.parse(TransferState, JSON.parse(value))
-      }
-
-      return value.trim()
-    })
-
-    const [
-      sourceHost,
-      sourceUser,
-      sourcePassword,
-      destinationHost,
-      destinationUser,
-      destinationPassword,
-      state,
-    ] = v.parse(
-      v.tuple([
-        v.string(),
-        v.string(),
-        v.string(),
-        v.string(),
-        v.string(),
-        v.string(),
-        v.nullish(TransferState),
-      ]),
-      values,
-    )
-
-    return {
-      id: state?.id || idGenerator(),
-      status: state?.status || "idle",
-      error: state?.error || null,
-      createdAt: state?.createdAt || Date.now(),
-      outputs: state?.outputs || [],
-      source: {
-        host: sourceHost || "",
-        user: sourceUser || "",
-        password: sourcePassword || "",
-      },
-      destination: {
-        host: destinationHost || "",
-        user: destinationUser || "",
-        password: destinationPassword || "",
-      },
-    }
-  })
+  );
 }
 
 export function App() {
-  const showTransferIdsId = useId()
-  const replaceAllId = useId()
-  const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds)
+  const showTransferIdsId = useId();
+  const replaceAllId = useId();
+  const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
   const transfers = useSelector(
     store,
     snapshot => snapshot.context.transfers,
-  )
+  );
   const settings = useSelector(
     store,
     snapshot => snapshot.context.settings,
-  )
-  const keyedTransfers = groupBy(transfers, "status")
+  );
+  const keyedTransfers = groupBy(transfers, "status");
 
   const isSyncing = transfers.some((transfer) => {
-    return transfer.status === "syncing"
-  })
+    return transfer.status === "syncing";
+  });
 
   const isAllCompleted = transfers.every((transfer) => {
-    return transfer.status === "completed"
-  })
+    return transfer.status === "completed";
+  });
 
   const startAllButton = match<
     StartAllButtonState,
@@ -197,117 +108,117 @@ export function App() {
     .otherwise(() => ({
       variant: "default",
       text: "Start all idle",
-    }))
+    }));
 
   const [newTransfer, setNewTransfer] = useState({
     source: { host: "", user: "", password: "" },
     destination: { host: "", user: "", password: "" },
-  })
+  });
 
   const hostOptions = useMemo(
     () => {
       const destinationHost = newTransfer.destination.host
         ? [newTransfer.destination.host]
-        : []
+        : [];
       const sourceHost = newTransfer.source.host
         ? [newTransfer.source.host]
-        : []
+        : [];
       const transfersHosts = transfers
         .flatMap(transfer => [
           transfer.source.host,
           transfer.destination.host,
         ])
-        .filter(Boolean)
+        .filter(Boolean);
       const uniqueHosts = Array.from(
         new Set([
           ...destinationHost,
           ...sourceHost,
           ...transfersHosts,
         ]),
-      )
+      );
 
       return uniqueHosts.map(host => ({
         label: host,
         value: host,
-      }))
+      }));
     },
     [transfers, newTransfer],
-  )
+  );
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddTransfer = () => {
-    const id = idGenerator()
+    const id = idGenerator();
     store.send({
       type: "addTransfer",
       id,
       source: newTransfer.source,
       destination: newTransfer.destination,
-    })
+    });
     // Reset form
     setNewTransfer({
       source: { host: "", user: "", password: "" },
       destination: { host: "", user: "", password: "" },
-    })
-  }
+    });
+  };
 
   const handleStartTransfer = (id: string) => {
-    store.send({ type: "startTransfer", id })
-  }
+    store.send({ type: "startTransfer", id });
+  };
 
   const handleRemoveTransfer = (id: string) => {
-    store.send({ type: "removeTransfer", id })
-  }
+    store.send({ type: "removeTransfer", id });
+  };
 
   const handleStartAll = () => {
-    store.send({ type: "startAll" })
-  }
+    store.send({ type: "startAll" });
+  };
 
   const handleRemoveAll = () => {
-    store.send({ type: "removeAll" })
-  }
+    store.send({ type: "removeAll" });
+  };
 
   const handleSourceChange = (field: string, value: string) => {
     setNewTransfer(prev => ({
       ...prev,
       source: { ...prev.source, [field]: value },
-    }))
-  }
+    }));
+  };
 
   const handleDestinationChange = (field: string, value: string) => {
     setNewTransfer(prev => ({
       ...prev,
       destination: { ...prev.destination, [field]: value },
-    }))
-  }
+    }));
+  };
 
   const handleBulkImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = (event) => {
-      const result = event.target?.result
+      const result = event.target?.result;
       if (typeof result !== "string") {
-        toast.error("Failed to read file contents")
+        toast.error("Failed to read file contents");
 
-        return
+        return;
       }
 
       // If replacing all, remove existing transfers first
       if (settings.replaceAllOnImport) {
-        store.send({ type: "removeAll" })
+        store.send({ type: "removeAll" });
       }
 
       try {
-        let transfers: TransferWithState[]
+        let transfers: TransferWithState[];
 
         if (file.name.endsWith(".csv")) {
-          transfers = convertCsvToTransfers(result)
+          transfers = convertCsvToTransfers(result);
         } else {
           // Handle JSON format
-          const data = JSON.parse(result)
-          transfers = Array.isArray(data) ? data : [data]
+          const data = JSON.parse(result);
+          transfers = Array.isArray(data) ? data : [data];
         }
 
         // Process all transfers uniformly
@@ -315,36 +226,36 @@ export function App() {
           store.send({
             type: "addTransfer",
             ...transfer,
-          })
+          });
 
           toast(`Imported transfer`, {
             closeButton: true,
             description: <ImportDescription transfer={transfer} />,
-          })
+          });
         }
 
         toast("Transfers imported successfully!", {
           closeButton: true,
-          description: `${ transfers.length } transfers imported from ${ file.name.endsWith(".csv") ? "CSV" : "JSON" }`,
-        })
+          description: `${transfers.length} transfers imported from ${file.name.endsWith(".csv") ? "CSV" : "JSON"}`,
+        });
       } catch (error) {
         toast.error("Failed to import transfers", {
           closeButton: true,
           description: error instanceof Error ? error.message : "Invalid file format",
-        })
+        });
       }
-    }
-    reader.readAsText(file)
+    };
+    reader.readAsText(file);
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   const handleToggleTransferIds = () => {
-    store.send({ type: "toggleShowTransferIds" })
-  }
+    store.send({ type: "toggleShowTransferIds" });
+  };
 
   return (
     <Providers>
@@ -361,8 +272,8 @@ export function App() {
                 className="underline hover:text-foreground transition-colors"
                 href="https://imapsync.lamiral.info/"
                 onClick={(e) => {
-                  e.preventDefault()
-                  window.api.openExternalUrl("https://imapsync.lamiral.info/")
+                  e.preventDefault();
+                  void window.api.openExternalUrl("https://imapsync.lamiral.info/");
                 }}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -386,8 +297,8 @@ export function App() {
             <Card asChild className="@4xl:sticky top-4 [@media(min-height:512px)]:@4xl:top-32 shrink max-w-[300px]">
               <form
                 onSubmit={(e) => {
-                  e.preventDefault()
-                  handleAddTransfer()
+                  e.preventDefault();
+                  handleAddTransfer();
                 }}
               >
                 <CardHeader>
@@ -419,8 +330,8 @@ export function App() {
                         <DropdownMenuItem
                           onClick={() => {
                             if (fileInputRef.current) {
-                              fileInputRef.current.accept = ".csv"
-                              fileInputRef.current.click()
+                              fileInputRef.current.accept = ".csv";
+                              fileInputRef.current.click();
                             }
                           }}
                         >
@@ -429,8 +340,8 @@ export function App() {
                         <DropdownMenuItem
                           onClick={() => {
                             if (fileInputRef.current) {
-                              fileInputRef.current.accept = ".json"
-                              fileInputRef.current.click()
+                              fileInputRef.current.accept = ".json";
+                              fileInputRef.current.click();
                             }
                           }}
                         >
@@ -576,14 +487,14 @@ export function App() {
                 <div className="flex gap-2">
                   {transfers.length > 0
                     ? (
-                      <Button
-                        disabled={isSyncing || isAllCompleted}
-                        onClick={handleStartAll}
-                        variant={startAllButton.variant}
-                      >
-                        {startAllButton.text}
-                      </Button>
-                    )
+                        <Button
+                          disabled={isSyncing || isAllCompleted}
+                          onClick={handleStartAll}
+                          variant={startAllButton.variant}
+                        >
+                          {startAllButton.text}
+                        </Button>
+                      )
                     : null}
 
                   {transfers.length > 0 && (
@@ -609,29 +520,29 @@ export function App() {
               <CardContent className="space-y-4">
                 {transfers.length === 0
                   ? (
-                    <div className="text-center py-6 text-gray-500">
-                      No transfers added yet. Configure a new transfer to get
-                      started.
-                    </div>
-                  )
-                  : (
-                    transfers.map((transfer, index) => (
-                      <div key={transfer.id}>
-                        {index > 0 && <div className="h-px bg-border my-6" />}
-                        <TransferItem
-                          hostOptions={hostOptions}
-                          onRemoveTransfer={handleRemoveTransfer}
-                          onStartTransfer={handleStartTransfer}
-                          transfer={transfer}
-                        />
+                      <div className="text-center py-6 text-gray-500">
+                        No transfers added yet. Configure a new transfer to get
+                        started.
                       </div>
-                    ))
-                  )}
+                    )
+                  : (
+                      transfers.map((transfer, index) => (
+                        <div key={transfer.id}>
+                          {index > 0 && <div className="h-px bg-border my-6" />}
+                          <TransferItem
+                            hostOptions={hostOptions}
+                            onRemoveTransfer={handleRemoveTransfer}
+                            onStartTransfer={handleStartTransfer}
+                            transfer={transfer}
+                          />
+                        </div>
+                      ))
+                    )}
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
     </Providers>
-  )
+  );
 }
