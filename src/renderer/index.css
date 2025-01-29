@@ -2,6 +2,11 @@
 
 @plugin 'tailwindcss-animate';
 
+@utility container {
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
 @theme {
   /* Base colors */
   --color-border: oklch(var(--border));
