@@ -64,11 +64,11 @@ async function createWindow() {
 }
 
 void app.whenReady().then(() => {
-  createWindow();
+  void createWindow();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      void createWindow();
     }
   });
 });
