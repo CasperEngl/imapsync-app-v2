@@ -445,23 +445,27 @@ export function App() {
                         <h3 className="font-medium">Source</h3>
                         <Combobox
                           className="w-full"
-                          onValueChange={value =>
-                            handleSourceChange("host", value)}
+                          onValueChange={(value) => {
+                            handleSourceChange("host", value);
+                          }}
                           options={hostOptions}
                           placeholder="Select or enter host..."
                           searchPlaceholder="Search hosts..."
                           value={newTransfer.source.host}
                         />
                         <Input
-                          onChange={e =>
-                            handleSourceChange("user", e.target.value)}
+                          onChange={(event) => {
+                            handleSourceChange("user", event.target.value);
+                            handleDestinationChange("user", event.target.value);
+                          }}
                           placeholder="Username"
                           type="text"
                           value={newTransfer.source.user}
                         />
                         <Input
-                          onChange={e =>
-                            handleSourceChange("password", e.target.value)}
+                          onChange={(event) => {
+                            handleSourceChange("password", event.target.value);
+                          }}
                           placeholder="Password"
                           type="password"
                           value={newTransfer.source.password}
@@ -471,23 +475,26 @@ export function App() {
                         <h3 className="font-medium">Destination</h3>
                         <Combobox
                           className="w-full"
-                          onValueChange={value =>
-                            handleDestinationChange("host", value)}
+                          onValueChange={(value) => {
+                            handleDestinationChange("host", value);
+                          }}
                           options={hostOptions}
                           placeholder="Select or enter host..."
                           searchPlaceholder="Search hosts..."
                           value={newTransfer.destination.host}
                         />
                         <Input
-                          onChange={e =>
-                            handleDestinationChange("user", e.target.value)}
+                          onChange={(event) => {
+                            handleDestinationChange("user", event.target.value);
+                          }}
                           placeholder="Username"
                           type="text"
                           value={newTransfer.destination.user}
                         />
                         <Input
-                          onChange={e =>
-                            handleDestinationChange("password", e.target.value)}
+                          onChange={(event) => {
+                            handleDestinationChange("password", event.target.value);
+                          }}
                           placeholder="Password"
                           type="password"
                           value={newTransfer.destination.password}
