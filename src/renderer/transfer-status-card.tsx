@@ -3,6 +3,7 @@ import { Button } from '~/renderer/components/ui/button.js';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '~/renderer/components/ui/card.js';
 import type { TransferStatus, TransferWithState } from '~/renderer/schemas.js';
 import { store } from '~/renderer/store.js';
+import { cn } from "./lib/utils.js";
 
 const keyMap = {
   idle: {
@@ -29,13 +30,15 @@ const keyMap = {
 export function TransferStatusCard({
   transfers,
   status,
+  className,
 }: {
   transfers: TransferWithState[];
   status: TransferStatus;
+  className?: string;
 }) {
   const key = keyMap[status];
   return (
-    <Card className="@container/transfer-status-card relative group flex flex-col items-center overflow-clip">
+    <Card className={cn("@container/transfer-status-card relative group flex flex-col items-center overflow-clip", className)}>
       <CardHeader className="px-4 pt-4 pb-1 text-2xl font-black">
         {transfers.length}
       </CardHeader>
