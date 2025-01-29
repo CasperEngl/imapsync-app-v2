@@ -1,6 +1,3 @@
-import { createStoreWithProducer } from "@xstate/store";
-import { current, produce } from "immer";
-import { customAlphabet } from "nanoid";
 import type {
   Transfer,
   TransferState,
@@ -8,9 +5,9 @@ import type {
   TransferWithState,
 } from "~/renderer/schemas.js";
 
-const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const idLength = 10;
-export const idGenerator = customAlphabet(alphabet, idLength);
+import { createStoreWithProducer } from "@xstate/store";
+import { current, produce } from "immer";
+import { idGenerator } from "~/renderer/utils/id.js";
 
 export interface StoreContext {
   transfers: TransferWithState[];
@@ -32,6 +29,7 @@ function loadPersistedState(): Partial<StoreContext> {
   } catch (error) {
     console.error("[Store] Failed to load persisted state:", error);
   }
+
   return {};
 }
 
@@ -63,7 +61,7 @@ export const store = createStoreWithProducer(produce, {
         id: string;
         source: Transfer;
         destination: Transfer;
-      }
+      },
     ) => {
       context.transfers.push({
         id: event.id,
@@ -78,8 +76,8 @@ export const store = createStoreWithProducer(produce, {
     },
     startAll: (context) => {
       const idleTransfers = context.transfers
-        .filter((t) => t.status === "idle")
-        .map((transfer) => current(transfer));
+        .filter(t => t.status === "idle")
+        .map(transfer => current(transfer));
 
       window.api.startAllTransfers(idleTransfers);
 
@@ -101,9 +99,9 @@ export const store = createStoreWithProducer(produce, {
       context,
       event: {
         id: string;
-      }
+      },
     ) => {
-      const index = context.transfers.findIndex((t) => t.id === event.id);
+      const index = context.transfers.findIndex(t => t.id === event.id);
       if (index !== -1) {
         context.transfers.splice(index, 1);
       }
@@ -114,9 +112,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
         field: keyof Transfer;
         value: unknown;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
 
       if (transfer && event.field in transfer.source) {
         transfer.source[event.field] = event.value as never;
@@ -128,9 +126,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
         field: keyof Transfer;
         value: unknown;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
 
       if (transfer && event.field in transfer.destination) {
         transfer.destination[event.field] = event.value as never;
@@ -140,15 +138,15 @@ export const store = createStoreWithProducer(produce, {
       context,
       event: {
         id: string;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
       if (!transfer) {
         console.warn("[Store] Transfer not found:", event.id);
+
         return;
       }
 
-      console.log("transfer", transfer);
       window.api.startTransfer(current(transfer));
 
       transfer.status = "syncing";
@@ -165,9 +163,9 @@ export const store = createStoreWithProducer(produce, {
       context,
       event: {
         id: string;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
       if (transfer) {
         transfer.status = "completed";
       }
@@ -177,9 +175,9 @@ export const store = createStoreWithProducer(produce, {
       event: {
         id: string;
         error: string;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
       if (transfer) {
         transfer.status = "error";
         transfer.error = event.error;
@@ -193,9 +191,9 @@ export const store = createStoreWithProducer(produce, {
         total: number;
         message: string;
         progress: number;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
       if (transfer) {
         transfer.progress = {
           current: event.current,
@@ -212,9 +210,9 @@ export const store = createStoreWithProducer(produce, {
         content: string;
         isError: boolean;
         timestamp: number;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
       if (transfer) {
         transfer.outputs.push({
           content: event.content,
@@ -227,9 +225,9 @@ export const store = createStoreWithProducer(produce, {
       context,
       event: {
         id: string;
-      }
+      },
     ) => {
-      const transfer = context.transfers.find((t) => t.id === event.id);
+      const transfer = context.transfers.find(t => t.id === event.id);
       if (!transfer) return;
 
       context.transfers.push({
@@ -247,20 +245,20 @@ export const store = createStoreWithProducer(produce, {
       context.settings.showTransferIds = !context.settings.showTransferIds;
     },
     toggleReplaceAllOnImport: (context) => {
-      context.settings.replaceAllOnImport =
-        !context.settings.replaceAllOnImport;
+      context.settings.replaceAllOnImport
+        = !context.settings.replaceAllOnImport;
     },
     toggleExportWithState: (context) => {
       context.settings.exportWithState = !context.settings.exportWithState;
     },
     removeAllByStatus: (context, event: { status: TransferStatus }) => {
       context.transfers = context.transfers.filter(
-        (transfer) => transfer.status !== event.status
+        transfer => transfer.status !== event.status,
       );
     },
     keepAllByStatus: (context, event: { status: TransferStatus }) => {
       context.transfers = context.transfers.filter(
-        (transfer) => transfer.status === event.status
+        transfer => transfer.status === event.status,
       );
     },
     removeAll: (context) => {

@@ -1,9 +1,10 @@
-import { spawn } from "child_process";
 import dayjs from "dayjs";
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import Store from "electron-store";
-import * as fs from "fs/promises";
-import * as path from "path";
+import { spawn } from "node:child_process";
+import * as fs from "node:fs/promises";
+import path from "node:path";
+
 import type {
   TransferState,
   TransferWithState,
@@ -12,23 +13,18 @@ import type {
 Store.initRenderer();
 
 const store = new Store<{
-  settings: {
-    logDirectory: string | null;
-    imapsyncPath: string | null;
-  };
+  logDirectory: string | null;
+  imapsyncPath: string | null;
 }>({
   defaults: {
-    settings: {
-      logDirectory: null,
-      imapsyncPath: null,
-    },
+    logDirectory: null,
+    imapsyncPath: null,
   },
 });
 
 async function getLogDirectory(): Promise<string> {
   const defaultPath = path.join(app.getPath("userData"), "LOG_imapsync");
-  // @ts-expect-error Electron Store badly typed
-  const storedPath = store.get("settings.logDirectory");
+  const storedPath = store.get("logDirectory");
 
   const exists = await fs
     .access(defaultPath ?? storedPath)
@@ -60,14 +56,14 @@ async function createWindow() {
   });
 
   if (!app.isPackaged) {
-    win.loadURL("http://localhost:5173");
+    await win.loadURL("http://localhost:5173");
     win.webContents.openDevTools();
   } else {
-    win.loadFile(path.join(__dirname, "../renderer/index.html"));
+    await win.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
 }
 
-app.whenReady().then(() => {
+await app.whenReady().then(() => {
   createWindow();
 
   app.on("activate", () => {
@@ -90,8 +86,7 @@ function getImapsyncBinaryDir(): string {
 }
 
 function getImapsyncPath(): string {
-  // @ts-expect-error Electron Store badly typed
-  const storedPath = store.get("settings.imapsyncPath");
+  const storedPath = store.get("imapsyncPath", "");
 
   if (storedPath) {
     return storedPath;
@@ -182,10 +177,10 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
 
         // Track total message count
         const totalMatch = line.match(
-          /Host2: folder \[.*?\] has (\d+) messages/
+          /Host2: folder \[.*?\] has (\d+) messages/,
         );
         if (totalMatch) {
-          totalProgress = parseInt(totalMatch[1] ?? "0", 10);
+          totalProgress = Number.parseInt(totalMatch[1] ?? "0", 10);
 
           win.webContents.send("transfer-progress", {
             id: transfer.id,
@@ -207,7 +202,7 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
               current: messageCount,
               total: totalProgress,
               message: `Transferring emails (${currentFolder}): ${messageCount}/${totalProgress}`,
-              progress: progress,
+              progress,
             });
           }
         }
@@ -319,15 +314,14 @@ ipcMain.handle("select-imapsync-binary", async () => {
     title: "Select imapsync binary",
   });
 
-  if (result.canceled || result.filePaths.length === 0) {
+  if (result.canceled || !result.filePaths[0]) {
     return null;
   }
 
   // Make it executable
   await fs.chmod(result.filePaths[0], "755");
 
-  // @ts-expect-error Electron Store badly typed
-  store.set("settings.imapsyncPath", result.filePaths[0]);
+  store.set("imapsyncPath", result.filePaths[0]);
 
   return result.filePaths[0];
 });
@@ -347,8 +341,7 @@ ipcMain.handle("select-log-directory", async () => {
     return null;
   }
 
-  // @ts-expect-error Electron Store badly typed
-  store.set("settings.logDirectory", result.filePaths[0]);
+  store.set("logDirectory", result.filePaths[0]);
 
   return result.filePaths[0];
 });
@@ -362,7 +355,7 @@ ipcMain.handle(
   async (
     event,
     transfers: TransferWithState[],
-    options: { exportAs: "json" | "csv"; withState: boolean }
+    options: { exportAs: "json" | "csv"; withState: boolean },
   ) => {
     try {
       const { exportAs, withState } = options;
@@ -370,7 +363,7 @@ ipcMain.handle(
       const { filePath } = await dialog.showSaveDialog({
         title: "Export Transfers",
         defaultPath: `transfers_${dayjs().format(
-          "YYYY-MM-DD_HH-mm-ss"
+          "YYYY-MM-DD_HH-mm-ss",
         )}.${exportAs}`,
         filters: [{ name: exportAs.toUpperCase(), extensions: [exportAs] }],
       });
@@ -397,7 +390,7 @@ ipcMain.handle(
           "Destination Password",
           ...(withState ? ["State"] : []),
         ];
-        const rows = transfers.map((t) => [
+        const rows = transfers.map(t => [
           t.source.host,
           t.source.user,
           t.source.password,
@@ -420,8 +413,8 @@ ipcMain.handle(
 
         const csvContent = [
           headers.join(","),
-          ...rows.map((row) =>
-            row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+          ...rows.map(row =>
+            row.map(cell => `"${String(cell).replace(/"/g, "\"\"")}"`).join(","),
           ),
         ].join("\n");
 
@@ -431,12 +424,13 @@ ipcMain.handle(
       return { success: true };
     } catch (error) {
       console.error("Failed to export transfers:", error);
+
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       };
     }
-  }
+  },
 );
 
 // Add this with the other ipcMain handlers
