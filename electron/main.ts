@@ -285,26 +285,70 @@ ipcMain.handle("start-transfer", async (event, transfer) => {
   }
 });
 
-ipcMain.handle("start-all-transfers", async (event, transfers) => {
-  for (const transfer of transfers) {
-    try {
-      const win = BrowserWindow.fromWebContents(event.sender);
-      if (!win) {
-        continue;
+async function asyncPool<T, U>(
+  concurrency: number,
+  items: T[],
+  fn: (item: T) => Promise<U>,
+): Promise<U[]> {
+  const results: U[] = [];
+  const inProgress = new Set<Promise<void>>();
+
+  return new Promise((resolve, reject) => {
+    let index = 0;
+
+    function next() {
+      if (index === items.length && inProgress.size === 0) {
+        resolve(results);
+
+        return;
       }
 
-      await runImapsync(transfer, win);
+      while (inProgress.size < concurrency && index < items.length) {
+        const item = items[index++];
+        const promise = fn(item)
+          .then((result) => {
+            results.push(result);
+            inProgress.delete(promise);
+            next();
+          })
+          .catch((err) => {
+            reject(err);
+          });
 
-      win.webContents.send("transfer-complete", {
-        id: transfer.id,
-      });
-    } catch (error) {
-      event.sender.send("transfer-error", {
-        id: transfer.id,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
+        inProgress.add(promise);
+      }
     }
-  }
+
+    next();
+  });
+}
+
+ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState[]) => {
+  const CONCURRENT_TRANSFERS = 1; // Adjust this number based on system capabilities
+
+  await asyncPool(
+    CONCURRENT_TRANSFERS,
+    transfers,
+    async (transfer) => {
+      try {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (!win) {
+          throw new Error("No window found for transfer");
+        }
+
+        await runImapsync(transfer, win);
+
+        win.webContents.send("transfer-complete", {
+          id: transfer.id,
+        });
+      } catch (error) {
+        event.sender.send("transfer-error", {
+          id: transfer.id,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    },
+  );
 });
 
 ipcMain.handle("select-imapsync-binary", async () => {
