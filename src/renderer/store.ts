@@ -1,51 +1,23 @@
 import { createStoreWithProducer } from "@xstate/store";
 import { current, produce } from "immer";
 import { customAlphabet } from "nanoid";
+import type {
+  Transfer,
+  TransferState,
+  TransferStatus,
+  TransferWithState,
+} from "~/renderer/schemas.js";
 
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const idLength = 10;
 export const idGenerator = customAlphabet(alphabet, idLength);
 
-export type Transfer = {
-  host: string;
-  user: string;
-  password: string;
-  port?: string;
-  ssl?: boolean;
-  tls?: boolean;
-};
-
-export type TransferStatus = "idle" | "syncing" | "completed" | "error";
-
-type TransferProgress = {
-  current: number;
-  total: number;
-  message: string;
-  progress: number;
-};
-
-type TransferOutput = {
-  content: string;
-  isError: boolean;
-  timestamp: number;
-};
-
-export type TransferState = {
-  id: string;
-  source: Transfer;
-  destination: Transfer;
-  status: TransferStatus;
-  error: string | null;
-  progress?: TransferProgress;
-  createdAt: number;
-  outputs: TransferOutput[];
-};
-
 export interface StoreContext {
-  transfers: TransferState[];
+  transfers: TransferWithState[];
   settings: {
     showTransferIds: boolean;
     replaceAllOnImport: boolean;
+    exportWithState: boolean;
   };
 }
 
@@ -78,6 +50,7 @@ const storeContext: StoreContext = {
   settings: persistedState.settings || {
     showTransferIds: true,
     replaceAllOnImport: false,
+    exportWithState: true,
   },
 };
 
@@ -86,7 +59,7 @@ export const store = createStoreWithProducer(produce, {
   on: {
     addTransfer: (
       context,
-      event: {
+      event: Partial<TransferState> & {
         id: string;
         source: Transfer;
         destination: Transfer;
@@ -96,10 +69,11 @@ export const store = createStoreWithProducer(produce, {
         id: event.id,
         source: event.source,
         destination: event.destination,
-        status: "idle" as const,
-        createdAt: Date.now(),
-        outputs: [],
-        error: null,
+        status: event.status || ("idle" as const),
+        createdAt: event.createdAt || Date.now(),
+        outputs: event.outputs || [],
+        error: event.error || null,
+        progress: event.progress,
       });
     },
     startAll: (context) => {
@@ -275,6 +249,9 @@ export const store = createStoreWithProducer(produce, {
     toggleReplaceAllOnImport: (context) => {
       context.settings.replaceAllOnImport =
         !context.settings.replaceAllOnImport;
+    },
+    toggleExportWithState: (context) => {
+      context.settings.exportWithState = !context.settings.exportWithState;
     },
     removeAllByStatus: (context, event: { status: TransferStatus }) => {
       context.transfers = context.transfers.filter(

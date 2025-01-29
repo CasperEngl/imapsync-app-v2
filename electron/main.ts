@@ -4,7 +4,11 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import Store from "electron-store";
 import * as fs from "fs/promises";
 import * as path from "path";
-import type { TransferState } from "../src/renderer/store.js";
+import type {
+  TransferState,
+  TransferWithState,
+} from "../src/renderer/schemas.js";
+
 Store.initRenderer();
 
 const store = new Store<{
@@ -97,7 +101,7 @@ function getImapsyncPath(): string {
   return path.join(getImapsyncBinaryDir(), "imapsync");
 }
 
-async function runImapsync(transfer: TransferState, win: BrowserWindow) {
+async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
   const imapsyncPath = getImapsyncPath();
   const logDir = await getLogDirectory();
 
@@ -353,27 +357,87 @@ ipcMain.handle("get-log-directory", async () => {
   return getLogDirectory();
 });
 
-ipcMain.handle("export-transfers", async (event, transfers) => {
-  try {
-    const { filePath } = await dialog.showSaveDialog({
-      title: "Export Transfers",
-      defaultPath: `transfers_${dayjs().format("YYYY-MM-DD_HH-mm-ss")}.json`,
-      filters: [{ name: "JSON", extensions: ["json"] }],
-    });
+ipcMain.handle(
+  "export-transfers",
+  async (
+    event,
+    transfers: TransferWithState[],
+    options: { exportAs: "json" | "csv"; withState: boolean }
+  ) => {
+    try {
+      const { exportAs, withState } = options;
 
-    if (!filePath) return { success: false };
+      const { filePath } = await dialog.showSaveDialog({
+        title: "Export Transfers",
+        defaultPath: `transfers_${dayjs().format(
+          "YYYY-MM-DD_HH-mm-ss"
+        )}.${exportAs}`,
+        filters: [{ name: exportAs.toUpperCase(), extensions: [exportAs] }],
+      });
 
-    await fs.writeFile(filePath, JSON.stringify(transfers));
+      if (!filePath) return { success: false };
 
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to export transfers:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+      if (exportAs === "json") {
+        // If withState is false, strip out the state properties
+        const dataToExport = withState
+          ? transfers
+          : transfers.map(({ source, destination }) => ({
+              source,
+              destination,
+            }));
+        await fs.writeFile(filePath, JSON.stringify(dataToExport, null, 2));
+      } else {
+        // Convert transfers to CSV format
+        const headers = [
+          "Source Host",
+          "Source User",
+          "Source Password",
+          "Destination Host",
+          "Destination User",
+          "Destination Password",
+          ...(withState ? ["State"] : []),
+        ];
+        const rows = transfers.map((t) => [
+          t.source.host,
+          t.source.user,
+          t.source.password,
+          t.destination.host,
+          t.destination.user,
+          t.destination.password,
+          ...(withState
+            ? [
+                JSON.stringify({
+                  id: t.id,
+                  status: t.status,
+                  error: t.error,
+                  progress: t.progress,
+                  createdAt: t.createdAt,
+                  outputs: t.outputs,
+                } satisfies TransferState),
+              ]
+            : []),
+        ]);
+
+        const csvContent = [
+          headers.join(","),
+          ...rows.map((row) =>
+            row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+          ),
+        ].join("\n");
+
+        await fs.writeFile(filePath, csvContent);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to export transfers:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
   }
-});
+);
 
 // Add this with the other ipcMain handlers
 ipcMain.handle("open-external-url", async (_, url: string) => {

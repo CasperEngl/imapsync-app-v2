@@ -8,7 +8,8 @@ import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Progress } from "~/renderer/components/ui/progress.js";
 import { cn } from "~/renderer/lib/utils.js";
-import { store, type TransferState, type TransferStatus } from "~/renderer/store.js";
+import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
+import { store } from "~/renderer/store.js";
 
 const statusConfig = {
   idle: {
@@ -51,7 +52,7 @@ const statusConfig = {
 >;
 
 interface TransferItemProps {
-  transfer: TransferState;
+  transfer: TransferWithState;
   hostOptions: Array<{ label: string; value: string }>;
   onStartTransfer: (id: string) => void;
   onRemoveTransfer: (id: string) => void;

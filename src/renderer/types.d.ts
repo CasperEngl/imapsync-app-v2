@@ -1,4 +1,4 @@
-import type { TransferState } from "./store.js";
+import type { TransferWithState } from "./store.js";
 
 interface TransferData {
   id: string;
@@ -17,8 +17,8 @@ interface TransferOutputData {
 }
 
 export interface IpcApi {
-  startAllTransfers: (transfers: TransferState[]) => void;
-  startTransfer: (transfer: TransferState) => void;
+  startAllTransfers: (transfers: TransferWithState[]) => void;
+  startTransfer: (transfer: TransferWithState) => void;
   onTransferProgress: (
     callback: (event: unknown, data: TransferData) => void
   ) => void;
@@ -36,7 +36,11 @@ export interface IpcApi {
   selectLogDirectory: () => Promise<string>;
   getLogDirectory: () => Promise<string>;
   exportTransfers: (
-    transfers: TransferState[]
+    transfers: TransferWithState[],
+    options: {
+      exportAs: "json" | "csv";
+      withState: boolean;
+    }
   ) => Promise<{ success: boolean; error?: string }>;
   openExternalUrl: (url: string) => Promise<void>;
 }
