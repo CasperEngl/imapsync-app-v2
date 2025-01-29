@@ -164,9 +164,5 @@ export default antfu({
         ],
       },
     },
-
-    "antfu/no-top-level-await": {
-      ignores: ["./src/main/**"],
-    },
   })
   .renamePlugins({});
