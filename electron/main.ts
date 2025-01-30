@@ -12,6 +12,22 @@ import type {
 
 Store.initRenderer();
 
+// Track all running processes
+const runningProcesses = new Map<string, ReturnType<typeof spawn>>();
+
+// Add cleanup handler for app quit
+app.on("before-quit", () => {
+  // Gracefully terminate all running processes
+  for (const [id, process] of runningProcesses.entries()) {
+    try {
+      process.kill();
+      runningProcesses.delete(id);
+    } catch (error) {
+      console.error(`Failed to kill process ${id}:`, error);
+    }
+  }
+});
+
 const store = new Store<{
   logDirectory: string | null;
   imapsyncPath: string | null;
@@ -74,6 +90,16 @@ void app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  // Clean up any running processes when all windows are closed
+  for (const [id, process] of runningProcesses.entries()) {
+    try {
+      process.kill();
+      runningProcesses.delete(id);
+    } catch (error) {
+      console.error(`Failed to kill process ${id}:`, error);
+    }
+  }
+
   if (process.platform !== "darwin") {
     app.quit();
   }
@@ -129,9 +155,12 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     ];
 
     const imapsync = spawn(imapsyncPath, args, {
-      detached: true,
+      detached: false, // Change to false since we're managing the process lifecycle
       stdio: "pipe",
     });
+
+    // Track the process
+    runningProcesses.set(transfer.id, imapsync);
 
     // Define progress tracking variables outside the listener
     let totalProgress = 0;
@@ -271,6 +300,8 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     });
 
     imapsync.on("close", (code) => {
+      // Remove from tracking on process end
+      runningProcesses.delete(transfer.id);
       if (code === 0) {
         resolve(true);
       } else {
