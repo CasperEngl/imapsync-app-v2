@@ -44,8 +44,11 @@ function persistState(state: StoreContext) {
 const persistedState = loadPersistedState();
 
 const storeContext: StoreContext = {
-  transfers: persistedState.transfers || [],
-  settings: persistedState.settings || {
+  transfers: persistedState.transfers?.map(transfer => ({
+    ...transfer,
+    status: transfer.status === "syncing" ? "idle" : transfer.status,
+  })) ?? [],
+  settings: persistedState.settings ?? {
     showTransferIds: true,
     replaceAllOnImport: false,
     exportWithState: true,
