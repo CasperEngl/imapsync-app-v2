@@ -9,6 +9,12 @@ contextBridge.exposeInMainWorld("api", {
   startAllTransfers: (transfers) => {
     return ipcRenderer.invoke("start-all-transfers", transfers);
   },
+  toggleTransferPause: (transferId) => {
+    return ipcRenderer.invoke("toggle-transfer-pause", transferId);
+  },
+  checkTransferState: (transferId) => {
+    return ipcRenderer.invoke("check-transfer-state", transferId);
+  },
   onTransferProgress: (callback) => {
     ipcRenderer.on("transfer-progress", callback);
 
@@ -35,6 +41,13 @@ contextBridge.exposeInMainWorld("api", {
 
     return () => {
       ipcRenderer.removeListener("transfer-output", callback);
+    };
+  },
+  onTransferStateChanged: (callback) => {
+    ipcRenderer.on("transfer-state-changed", callback);
+
+    return () => {
+      ipcRenderer.removeListener("transfer-state-changed", callback);
     };
   },
   selectImapsyncBinary: () => ipcRenderer.invoke("select-imapsync-binary"),

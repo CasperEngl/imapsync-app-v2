@@ -14,6 +14,7 @@ Store.initRenderer();
 
 // Track all running processes
 const runningProcesses = new Map<string, ReturnType<typeof spawn>>();
+const pausedTransfers = new Set<string>();
 
 // Add cleanup handler for app quit
 app.on("before-quit", () => {
@@ -128,6 +129,101 @@ function getImapsyncPath(): string {
   // Fall back to default location
   return path.join(getImapsyncBinaryDir(), "imapsync");
 }
+
+// Add function to verify process state
+async function verifyProcessState(transferId: string, process: ReturnType<typeof spawn>, win: BrowserWindow) {
+  try {
+    process.kill(0); // Test if process is running
+
+    return true;
+  } catch (error) {
+    console.error(`Process for transfer ${transferId} is no longer running:`, error);
+    runningProcesses.delete(transferId);
+    pausedTransfers.delete(transferId);
+    win.webContents.send("transfer-error", {
+      id: transferId,
+      error: "Transfer process ended unexpectedly",
+    });
+
+    return false;
+  }
+}
+
+// Add handler for checking transfer state
+ipcMain.handle("check-transfer-state", async (event, transferId: string) => {
+  const process = runningProcesses.get(transferId);
+  const win = BrowserWindow.fromWebContents(event.sender);
+
+  if (!win) {
+    throw new Error("No window found for transfer");
+  }
+
+  if (!process) {
+    return {
+      isRunning: false,
+      isPaused: false,
+    };
+  }
+
+  const isRunning = await verifyProcessState(transferId, process, win);
+
+  return {
+    isRunning,
+    isPaused: pausedTransfers.has(transferId),
+  };
+});
+
+// Add handler for toggling transfer pause state
+ipcMain.handle("toggle-transfer-pause", async (event, transferId: string) => {
+  const process = runningProcesses.get(transferId);
+  if (!process) {
+    console.error(`[Pause] No running process found for transfer ${transferId}`);
+    throw new Error("No running process found for this transfer");
+  }
+
+  console.warn(`[Pause] Found process for transfer ${transferId}, PID: ${process.pid}`);
+
+  // On Unix-like systems (including macOS), SIGSTOP pauses and SIGCONT resumes
+  if (pausedTransfers.has(transferId)) {
+    console.warn(`[Resume] Sending SIGCONT to process ${process.pid} for transfer ${transferId}`);
+    process.kill("SIGCONT");
+    pausedTransfers.delete(transferId);
+
+    // Verify process state after resume
+    try {
+      process.kill(0); // Test if process is running
+      console.warn(`[Resume] Process ${process.pid} successfully resumed`);
+    } catch (error) {
+      console.error(`[Resume] Failed to verify process state: ${error}`);
+    }
+
+    event.sender.send("transfer-state-changed", {
+      id: transferId,
+      isPaused: false,
+    });
+
+    return false; // Return false to indicate the transfer is now unpaused
+  } else {
+    console.warn(`[Pause] Sending SIGSTOP to process ${process.pid} for transfer ${transferId}`);
+    process.kill("SIGSTOP");
+    pausedTransfers.add(transferId);
+
+    // Verify process state after pause
+    try {
+      process.kill(0); // Test if process is running
+      console.warn(`[Pause] Process ${process.pid} successfully paused`);
+    } catch (error) {
+      console.error(`[Pause] Failed to verify process state: ${error}`);
+    }
+
+    event.sender.send("transfer-state-changed", {
+      id: transferId,
+      isPaused: true,
+    });
+
+    return true; // Return true to indicate the transfer is now paused
+  }
+});
 
 async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
   const imapsyncPath = getImapsyncPath();
@@ -546,4 +642,5 @@ ipcMain.handle("remove-transfer", async (_, transferId: string) => {
     }
   }
   runningProcesses.delete(transferId);
+  pausedTransfers.delete(transferId);
 });

@@ -1,8 +1,9 @@
 import type { VariantProps } from "class-variance-authority";
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
+import { useQuery } from "@tanstack/react-query";
 import { useSelector } from "@xstate/store/react";
-import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Pause, Play, RotateCcw, X } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Copy, Loader, Pause, Play, RotateCcw, X } from "lucide-react";
 import { useDeferredValue } from "react";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
@@ -10,7 +11,6 @@ import { Input } from "~/renderer/components/ui/input.js";
 import { Progress } from "~/renderer/components/ui/progress.js";
 import { cn } from "~/renderer/lib/utils.js";
 import { store } from "~/renderer/store.js";
-
 import type { badgeVariants } from "./ui/badge.styles.js";
 
 const statusConfig = {
@@ -27,12 +27,28 @@ const statusConfig = {
     },
   },
   syncing: {
-    text: "Syncing",
-    variant: "default",
-    icon: <Loader2 className="size-4 animate-spin" />,
+    text: "Pause",
+    variant: "warning",
+    icon: <Pause className="size-4" />,
     disabled: false,
     className: "",
-    onClick: () => {},
+    onClick: async (transfer: TransferWithState) => {
+      if (transfer.status === "syncing") {
+        await window.api.toggleTransferPause(transfer.id);
+      }
+    },
+  },
+  paused: {
+    text: "Resume",
+    variant: "warning",
+    icon: <Play className="size-4" />,
+    disabled: false,
+    className: "",
+    onClick: async (transfer: TransferWithState) => {
+      if (transfer.status === "paused") {
+        await window.api.toggleTransferPause(transfer.id);
+      }
+    },
   },
   completed: {
     text: "Restart",
@@ -81,6 +97,41 @@ export function TransferItem({
 }: TransferItemProps) {
   const outputs = useDeferredValue(transfer.outputs);
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
+
+  // Use React Query to handle transfer state polling
+  useQuery({
+    queryKey: ["transferState", transfer.id],
+    queryFn: async () => {
+      const state = await window.api.checkTransferState(transfer.id);
+
+      if (!state.isRunning) {
+        store.send({
+          type: "transferError",
+          id: transfer.id,
+          error: "Transfer process is no longer running",
+        });
+      } else if (state.isPaused !== (transfer.status === "paused")) {
+        store.send({
+          type: "updateTransferState",
+          id: transfer.id,
+          isPaused: state.isPaused,
+        });
+      }
+
+      return state;
+    },
+    // Only poll when transfer is in syncing or paused state
+    enabled: transfer.status === "syncing" || transfer.status === "paused",
+    // Poll every 1 second
+    refetchInterval: 1000,
+    // Don't refetch on window focus to avoid disrupting the user
+    refetchOnWindowFocus: false,
+    // Retry up to 3 times if the query fails
+    retry: 3,
+    // Use staleTime to prevent unnecessary refetches
+    staleTime: 2000,
+    gcTime: 0, // Don't keep old data in cache
+  });
 
   const config = statusConfig[transfer.status];
 
@@ -225,15 +276,23 @@ export function TransferItem({
         </div>
 
         <div className="flex gap-2">
-          {transfer.status === "syncing"
+          {transfer.status === "syncing" || transfer.status === "paused"
             ? (
-                <Loader2 className="size-6 my-1 animate-spin" />
+                <Loader
+                  className={cn(
+                    "size-6 my-1 animate-spin text-muted-foreground [animation-duration:2.5s]",
+                    {
+                      "[animation-play-state:paused]": transfer.status === "paused",
+                    },
+                  )}
+                />
               )
             : null}
 
           {/* Progress bar for syncing state */}
           <div className="w-full mt-0.5 mb-4">
             <Progress
+              isActive={transfer.status === "syncing"}
               value={
                 transfer.progress
                   ? (transfer.progress.current / transfer.progress.total) * 100
