@@ -144,3 +144,6 @@ release/
 
 # Mac
 .DS_Store
+
+# Turbo
+.turbo
