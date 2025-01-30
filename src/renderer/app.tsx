@@ -70,7 +70,7 @@ function ImportDescription({
 }
 
 export function App() {
-  const [headerRef, headerMeasure] = useMeasure<HTMLDivElement>();
+  const [appBarRef, appBarMeasure] = useMeasure<HTMLDivElement>();
   const exportWithStateId = useId();
   const showTransferIdsId = useId();
   const replaceAllId = useId();
@@ -152,14 +152,6 @@ export function App() {
       source: { host: "", user: "", password: "" },
       destination: { host: "", user: "", password: "" },
     });
-  };
-
-  const handleStartTransfer = (id: string) => {
-    store.send({ type: "startTransfer", id });
-  };
-
-  const handleRemoveTransfer = (id: string) => {
-    store.send({ type: "removeTransfer", id });
   };
 
   const handleStartAll = () => {
@@ -265,20 +257,17 @@ export function App() {
     }
   };
 
-  const headerHeightStyle = useMemo(() => {
+  const appBarHeightStyle = useMemo(() => {
     return {
-      "--header-height": `calc(${headerMeasure.height + headerMeasure.top}px + 2rem)`,
+      "--app-bar-height": `calc(${appBarMeasure.height + appBarMeasure.top}px + 1rem)`,
     } as React.CSSProperties;
-  }, [headerMeasure.height, headerMeasure.top]);
+  }, [appBarMeasure.height, appBarMeasure.top]);
 
   return (
     <Providers>
       <div className="relative">
-        <div className="[app-region:drag] h-10 select-all bg-accent"></div>
-        <header
-          className="z-10 relative top-0 bg-white shadow py-4 [@media(min-height:512px)]:sticky"
-          ref={headerRef}
-        >
+        <div className="[app-region:drag] z-10 sticky top-0 h-10 select-all bg-accent" ref={appBarRef}></div>
+        <header className="relative bg-white shadow py-4">
           <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
 
@@ -316,8 +305,8 @@ export function App() {
             {/* Add Transfer Form */}
             <Card
               asChild
-              className="[@media(min-height:512px)]:@2xl:sticky top-(--header-height)"
-              style={headerHeightStyle}
+              className="[@media(min-height:512px)]:@2xl:sticky top-(--app-bar-height)"
+              style={appBarHeightStyle}
             >
               <form
                 onSubmit={(e) => {
@@ -609,8 +598,6 @@ export function App() {
                           {index > 0 && <div className="h-px bg-border my-6" />}
                           <TransferItem
                             hostOptions={hostOptions}
-                            onRemoveTransfer={handleRemoveTransfer}
-                            onStartTransfer={handleStartTransfer}
                             transfer={transfer}
                           />
                         </div>
