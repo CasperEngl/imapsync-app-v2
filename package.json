@@ -1,12 +1,15 @@
 {
   "name": "imapsync-app-v2",
+  "type": "module",
   "version": "1.0.0",
   "description": "Imapsync GUI",
-  "keywords": [],
-  "license": "SEE LICENSE IN LICENSE.md",
   "author": "Casper Engelmann <me@casperengelmann.com>",
-  "type": "module",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "keywords": [],
   "main": "dist/main/main.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "rm -rf release && electron-vite build",
     "dev": "electron-vite dev",
@@ -70,9 +73,6 @@
     "vite": "^6.0.11",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.4"
-  },
-  "engines": {
-    "node": ">=22"
   },
   "volta": {
     "node": "22.13.1"
