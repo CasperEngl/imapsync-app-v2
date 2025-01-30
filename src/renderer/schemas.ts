@@ -29,6 +29,7 @@ export const TransferStatus = v.picklist([
   "syncing",
   "completed",
   "error",
+  "paused",
 ]);
 
 export type TransferStatus = v.InferOutput<typeof TransferStatus>;

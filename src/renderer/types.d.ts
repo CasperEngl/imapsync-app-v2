@@ -19,6 +19,8 @@ interface TransferOutputData {
 export interface IpcApi {
   startAllTransfers: (transfers: TransferWithState[]) => void;
   startTransfer: (transfer: TransferWithState) => void;
+  toggleTransferPause: (transferId: string) => Promise<boolean>;
+  checkTransferState: (transferId: string) => Promise<{ isRunning: boolean; isPaused: boolean }>;
   onTransferProgress: (
     callback: (event: unknown, data: TransferData) => void
   ) => void;
@@ -30,6 +32,9 @@ export interface IpcApi {
   ) => void;
   onTransferOutput: (
     callback: (event: unknown, data: TransferOutputData) => void
+  ) => void;
+  onTransferStateChanged: (
+    callback: (event: unknown, data: { id: string; isPaused: boolean }) => void
   ) => void;
   selectImapsyncBinary: () => Promise<string>;
   getImapsyncPath: () => Promise<string>;

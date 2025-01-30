@@ -2,7 +2,11 @@ import * as ProgressPrimitive from "@radix-ui/react-progress";
 import * as React from "react";
 import { cn } from "~/renderer/lib/utils.js";
 
-export function Progress({ ref, className, value, ...props }: React.ComponentProps<typeof ProgressPrimitive.Root>) {
+interface ProgressProps extends React.ComponentProps<typeof ProgressPrimitive.Root> {
+  isActive?: boolean;
+}
+
+export function Progress({ ref, className, value, isActive, ...props }: ProgressProps) {
   return (
     <ProgressPrimitive.Root
       className={cn(
@@ -17,8 +21,9 @@ export function Progress({ ref, className, value, ...props }: React.ComponentPro
           "h-full w-full flex-1 transition-all",
           value
             ? [
-                value > 0 && value < 100 ? "animate-pulse" : null,
+                value > 0 && value < 100 ? "opacity-50" : null,
                 value > 0 ? "bg-primary" : "bg-muted",
+                isActive ? "animate-pulse opacity-100" : null,
               ]
             : null,
         )}

@@ -44,10 +44,7 @@ function persistState(state: StoreContext) {
 const persistedState = loadPersistedState();
 
 const storeContext: StoreContext = {
-  transfers: persistedState.transfers?.map(transfer => ({
-    ...transfer,
-    status: transfer.status === "syncing" ? "idle" : transfer.status,
-  })) ?? [],
+  transfers: persistedState.transfers ?? [],
   settings: persistedState.settings ?? {
     showTransferIds: true,
     replaceAllOnImport: false,
@@ -284,6 +281,18 @@ export const store = createStoreWithProducer(produce, {
     removeAll: (context) => {
       context.transfers = [];
     },
+    updateTransferState: (
+      context,
+      event: {
+        id: string;
+        isPaused: boolean;
+      },
+    ) => {
+      const transfer = context.transfers.find(t => t.id === event.id);
+      if (transfer) {
+        transfer.status = event.isPaused ? "paused" : "syncing";
+      }
+    },
   },
 });
 
@@ -327,5 +336,13 @@ window.api.onTransferOutput((event, data) => {
     content: data.content,
     isError: data.isError,
     timestamp: data.timestamp,
+  });
+});
+
+window.api.onTransferStateChanged((event, data) => {
+  store.send({
+    type: "updateTransferState",
+    id: data.id,
+    isPaused: data.isPaused,
   });
 });
