@@ -39,6 +39,7 @@ jobs:
             ${{ runner.os }}-electron-cache-
 
       - name: Install dependencies
+        working-directory: apps/app
         run: bun install --frozen-lockfile
 
       - name: Build Application
