@@ -43,6 +43,7 @@ export interface IpcApi {
     }
   ) => Promise<{ success: boolean; error?: string }>;
   openExternalUrl: (url: string) => Promise<void>;
+  removeTransfer: (transferId: string) => Promise<void>;
 }
 
 declare global {

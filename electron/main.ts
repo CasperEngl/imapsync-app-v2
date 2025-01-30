@@ -22,6 +22,13 @@ app.on("before-quit", () => {
     try {
       process.kill();
       runningProcesses.delete(id);
+      // Notify renderer that transfer is no longer running
+      BrowserWindow.getAllWindows().forEach((win) => {
+        win.webContents.send("transfer-error", {
+          id,
+          error: "Transfer stopped due to application quit",
+        });
+      });
     } catch (error) {
       console.error(`Failed to kill process ${id}:`, error);
     }
@@ -526,4 +533,17 @@ ipcMain.handle(
 // Add this with the other ipcMain handlers
 ipcMain.handle("open-external-url", async (_, url: string) => {
   return shell.openExternal(url);
+});
+
+// Add handler for removing transfers
+ipcMain.handle("remove-transfer", async (_, transferId: string) => {
+  const process = runningProcesses.get(transferId);
+  if (process) {
+    try {
+      process.kill();
+    } catch (error) {
+      console.error(`Failed to kill process for transfer ${transferId}:`, error);
+    }
+  }
+  runningProcesses.delete(transferId);
 });

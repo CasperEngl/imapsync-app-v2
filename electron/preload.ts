@@ -45,4 +45,5 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("export-transfers", transfers, options),
   openExternalUrl: (url: string) =>
     ipcRenderer.invoke("open-external-url", url),
+  removeTransfer: (transferId: string) => ipcRenderer.invoke("remove-transfer", transferId),
 } satisfies IpcApi);

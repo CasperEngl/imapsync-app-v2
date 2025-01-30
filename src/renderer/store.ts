@@ -108,6 +108,8 @@ export const store = createStoreWithProducer(produce, {
       if (index !== -1) {
         context.transfers.splice(index, 1);
       }
+
+      void window.api.removeTransfer(event.id);
     },
     updateTransferSource: (
       context,
