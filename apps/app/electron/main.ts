@@ -82,7 +82,9 @@ async function createWindow() {
 
   if (!app.isPackaged) {
     await win.loadURL("http://localhost:5173");
-    win.webContents.openDevTools();
+    win.webContents.openDevTools({
+      mode: "bottom",
+    });
   } else {
     await win.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
