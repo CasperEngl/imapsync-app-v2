@@ -1,6 +1,7 @@
 import antfu from "@antfu/eslint-config";
 
 export default antfu({
+  ignores: ["electron/**/*"],
   stylistic: {
     indent: 2,
     quotes: "double",
