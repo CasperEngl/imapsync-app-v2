@@ -39,17 +39,15 @@ jobs:
             ${{ runner.os }}-electron-cache-
 
       - name: Install dependencies
-        working-directory: apps/app
         run: bun install --frozen-lockfile
 
       - name: Build Application
-        working-directory: apps/app
         run: bun run build
 
-      # Modified build command to use cross-platform syntax
+      # Modified build command to use cross-platform syntax and correct working directory
       - name: Build Electron App
-        working-directory: apps/app
         run: |
+          cd apps/app
           if [ "$RUNNER_OS" == "Linux" ]; then
             bun run electron-builder --linux
           elif [ "$RUNNER_OS" == "Windows" ]; then
