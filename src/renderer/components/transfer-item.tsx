@@ -244,7 +244,7 @@ export function TransferItem({
               {transfer.error
                 ? (
                     <span className="text-red-500">
-                      Error:
+                      Error:{" "}
                       {transfer.error}
                     </span>
                   )
