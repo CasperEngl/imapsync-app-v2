@@ -1,10 +1,9 @@
 import type { VariantProps } from "class-variance-authority";
-import type { buttonVariants } from "~/renderer/components/ui/button.js";
 
 import { Label } from "@radix-ui/react-label";
 import { useSelector } from "@xstate/store/react";
 import { groupBy } from "lodash-es";
-import { ArrowRightLeft, CircleMinus } from "lucide-react";
+import { CircleMinus } from "lucide-react";
 import { useId, useMemo, useRef, useState } from "react";
 import { useMeasure } from "react-use";
 import { toast } from "sonner";
@@ -29,8 +28,10 @@ import { TransferStatusCard } from "~/renderer/transfer-status-card.js";
 import { convertCsvToTransfers } from "~/renderer/utils/convert-csv-to-transfers.js";
 import { idGenerator } from "~/renderer/utils/id.js";
 
-import type { Transfer, TransferWithState } from "./schemas.js";
+import type { buttonVariants } from "./components/ui/button.styles.js";
+import type { TransferWithState } from "./schemas.js";
 
+import { ImportDescription } from "./components/import-description.js";
 import { store } from "./store.js";
 
 export interface StartAllButtonState {
@@ -41,32 +42,6 @@ export interface StartAllButtonState {
 export interface StartAllButtonResult {
   variant: VariantProps<typeof buttonVariants>["variant"];
   text: string;
-}
-
-function ImportDescription({
-  transfer,
-}: {
-  transfer: {
-    source: Transfer;
-    destination: Transfer;
-  };
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="text-xs text-muted-foreground">Source</div>
-      <div className="flex gap-1 items-center text-sm">
-        <span className="font-medium">{transfer.source.user}</span>
-        <ArrowRightLeft className="size-4 text-muted-foreground/50"></ArrowRightLeft>
-        <span className="font-medium">{transfer.source.host}</span>
-      </div>
-      <div className="text-xs text-muted-foreground">Destination</div>
-      <div className="flex gap-1 items-center text-sm">
-        <span className="font-medium">{transfer.destination.user}</span>
-        <ArrowRightLeft className="size-4 text-muted-foreground/50"></ArrowRightLeft>
-        <span className="font-medium">{transfer.destination.host}</span>
-      </div>
-    </div>
-  );
 }
 
 export function App() {

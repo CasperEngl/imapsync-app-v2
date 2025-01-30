@@ -46,7 +46,6 @@ export function Combobox({
 
   return (
     <Popover
-      open={open}
       onOpenChange={(isOpen) => {
         setOpen(isOpen);
         if (isOpen) {
@@ -55,12 +54,17 @@ export function Combobox({
           setInputValue(selectedValue);
         }
       }}
+      open={open}
     >
       <PopoverTrigger asChild>
         <Button
-          onMouseDown={(e) => {
-            e.preventDefault();
-          }}
+          aria-expanded={open}
+          className={cn(
+            "w-[200px] justify-between",
+            open && "outline",
+            !selectedValue && !open && "text-muted-foreground",
+            className,
+          )}
           onFocus={() => {
             if (!preventReopenRef.current) {
               setOpen(true);
@@ -68,15 +72,11 @@ export function Combobox({
             }
             preventReopenRef.current = false;
           }}
-          variant="outline"
+          onMouseDown={(e) => {
+            e.preventDefault();
+          }}
           role="combobox"
-          aria-expanded={open}
-          className={cn(
-            "w-[200px] justify-between",
-            open && "outline",
-            !selectedValue && !open && "text-muted-foreground",
-            className
-          )}
+          variant="outline"
         >
           {selectedValue || placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -85,13 +85,6 @@ export function Combobox({
       <PopoverContent className="p-0 min-w-[var(--radix-popper-anchor-width)] max-w-[var(--radix-popper-anchor-width)]">
         <Command>
           <CommandInput
-            placeholder={searchPlaceholder}
-            value={inputValue}
-            onValueChange={(value) => {
-              setInputValue(value);
-              setSelectedValue(value);
-              onValueChange?.(value);
-            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 preventReopenRef.current = true;
@@ -102,16 +95,30 @@ export function Combobox({
                 setOpen(false);
               }
             }}
+            onValueChange={(value) => {
+              setInputValue(value);
+              setSelectedValue(value);
+              onValueChange?.(value);
+            }}
+            placeholder={searchPlaceholder}
+            value={inputValue}
           />
           <CommandList>
             <CommandEmpty>
-              {inputValue ? <>Press Enter to use "{inputValue}"</> : emptyText}
+              {inputValue
+                ? (
+                    <>
+                      Press Enter to use "
+                      {inputValue}
+                      "
+                    </>
+                  )
+                : emptyText}
             </CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {options.map(option => (
                 <CommandItem
                   key={option.value}
-                  value={option.value}
                   onSelect={(currentValue) => {
                     preventReopenRef.current = true;
                     setSelectedValue(currentValue);
@@ -119,13 +126,14 @@ export function Combobox({
                     onValueChange?.(currentValue);
                     setOpen(false);
                   }}
+                  value={option.value}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
                       selectedValue === option.value
                         ? "opacity-100"
-                        : "opacity-0"
+                        : "opacity-0",
                     )}
                   />
                   {option.label}
