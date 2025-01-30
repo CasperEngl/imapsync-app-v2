@@ -487,22 +487,22 @@ ipcMain.handle(
           "Destination Password",
           ...(withState ? ["State"] : []),
         ];
-        const rows = transfers.map(t => [
-          t.source.host,
-          t.source.user,
-          t.source.password,
-          t.destination.host,
-          t.destination.user,
-          t.destination.password,
+        const rows = transfers.map(transfer => [
+          transfer.source.host,
+          transfer.source.user,
+          transfer.source.password,
+          transfer.destination.host,
+          transfer.destination.user,
+          transfer.destination.password,
           ...(withState
             ? [
                 JSON.stringify({
-                  id: t.id,
-                  status: t.status,
-                  error: t.error,
-                  progress: t.progress,
-                  createdAt: t.createdAt,
-                  outputs: t.outputs,
+                  id: transfer.id,
+                  status: transfer.status,
+                  error: transfer.error,
+                  progress: transfer.progress,
+                  createdAt: transfer.createdAt,
+                  outputs: transfer.outputs,
                 } satisfies TransferState),
               ]
             : []),
