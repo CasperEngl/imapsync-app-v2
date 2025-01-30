@@ -42,10 +42,12 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build Application
+        working-directory: apps/app
         run: bun run build
 
       # Modified build command to use cross-platform syntax
       - name: Build Electron App
+        working-directory: apps/app
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             bun run electron-builder --linux
@@ -61,7 +63,7 @@ jobs:
         with:
           name: dist-${{ matrix.os }}
           path: |
-            release/*.exe
-            release/*.AppImage
-            release/*.deb
-            release/*.zip
+            apps/app/release/*.exe
+            apps/app/release/*.AppImage
+            apps/app/release/*.deb
+            apps/app/release/*.zip
