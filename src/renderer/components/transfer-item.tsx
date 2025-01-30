@@ -26,9 +26,9 @@ const statusConfig = {
     },
   },
   syncing: {
-    text: "Pause",
-    variant: "warning",
-    icon: <Pause className="size-4" />,
+    text: "Syncing",
+    variant: "default",
+    icon: <Loader2 className="size-4 animate-spin" />,
     disabled: false,
     className: "",
     onClick: () => {},
