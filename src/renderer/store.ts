@@ -244,6 +244,21 @@ export const store = createStoreWithProducer(produce, {
         progress: undefined,
       });
     },
+    swapSourceAndDestination: (
+      context,
+      event: {
+        id: string;
+      },
+    ) => {
+      const transfer = context.transfers.find(t => t.id === event.id);
+      if (!transfer) return;
+
+      const source = current(transfer.source);
+      const destination = current(transfer.destination);
+
+      transfer.source = destination;
+      transfer.destination = source;
+    },
     toggleShowTransferIds: (context) => {
       context.settings.showTransferIds = !context.settings.showTransferIds;
     },

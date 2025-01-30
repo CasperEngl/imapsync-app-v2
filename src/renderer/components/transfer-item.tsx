@@ -3,7 +3,7 @@ import type { badgeVariants } from "~/renderer/components/ui/badge.js";
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
 import { useSelector } from "@xstate/store/react";
-import { CheckCircle2, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
 import { useDeferredValue } from "react";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
@@ -192,6 +192,25 @@ export function TransferItem({
           </div>
         </div>
 
+        <div className="flex gap-2 mb-4">
+          <Button
+            onClick={() => store.send({ type: "duplicateTransfer", id: transfer.id })}
+            title="Duplicate transfer"
+            variant="outline"
+          >
+            <Copy className="size-4" />
+            Duplicate
+          </Button>
+          <Button
+            onClick={() => store.send({ type: "swapSourceAndDestination", id: transfer.id })}
+            title="Swap source and destination"
+            variant="outline"
+          >
+            <ArrowLeftRight className="size-4" />
+            Swap
+          </Button>
+        </div>
+
         {/* Progress bar for syncing state */}
         <div className="w-full mt-0.5 mb-4">
           <Progress
@@ -233,14 +252,6 @@ export function TransferItem({
           >
             <X className="size-4" />
             Remove
-          </Button>
-          <Button
-            onClick={() => store.send({ type: "duplicateTransfer", id: transfer.id })}
-            title="Duplicate transfer"
-            variant="outline"
-          >
-            <Copy className="size-4" />
-            Duplicate
           </Button>
         </div>
 
