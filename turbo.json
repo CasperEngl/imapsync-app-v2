@@ -19,6 +19,9 @@
     "ts:check": {
       "dependsOn": ["^ts:check"],
       "cache": true
+    },
+    "electron-builder": {
+      "cache": false
     }
   }
 }
