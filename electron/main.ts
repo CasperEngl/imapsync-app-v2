@@ -38,10 +38,12 @@ app.on("before-quit", () => {
 const store = new Store<{
   logDirectory: string | null;
   imapsyncPath: string | null;
+  concurrentTransfers: number;
 }>({
   defaults: {
     logDirectory: null,
     imapsyncPath: null,
+    concurrentTransfers: 3,
   },
 });
 
@@ -546,4 +548,17 @@ ipcMain.handle("remove-transfer", async (_, transferId: string) => {
     }
   }
   runningProcesses.delete(transferId);
+});
+
+// Add handlers for concurrent transfers setting
+ipcMain.handle("get-concurrent-transfers", () => {
+  return store.get("concurrentTransfers");
+});
+
+ipcMain.handle("set-concurrent-transfers", (_, value: number) => {
+  if (value < 1) {
+    throw new Error("Concurrent transfers must be a positive number");
+  }
+  store.set("concurrentTransfers", value);
+  return value;
 });

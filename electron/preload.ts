@@ -41,6 +41,8 @@ contextBridge.exposeInMainWorld("api", {
   getImapsyncPath: () => ipcRenderer.invoke("get-imapsync-path"),
   selectLogDirectory: () => ipcRenderer.invoke("select-log-directory"),
   getLogDirectory: () => ipcRenderer.invoke("get-log-directory"),
+  getConcurrentTransfers: () => ipcRenderer.invoke("get-concurrent-transfers"),
+  setConcurrentTransfers: (value: number) => ipcRenderer.invoke("set-concurrent-transfers", value),
   exportTransfers: (transfers, options) =>
     ipcRenderer.invoke("export-transfers", transfers, options),
   openExternalUrl: (url: string) =>

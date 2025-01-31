@@ -35,6 +35,8 @@ export interface IpcApi {
   getImapsyncPath: () => Promise<string>;
   selectLogDirectory: () => Promise<string>;
   getLogDirectory: () => Promise<string>;
+  getConcurrentTransfers: () => Promise<number>;
+  setConcurrentTransfers: (value: number) => Promise<number>;
   exportTransfers: (
     transfers: TransferWithState[],
     options: {
