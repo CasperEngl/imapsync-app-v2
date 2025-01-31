@@ -277,6 +277,21 @@ export function App() {
               functionality is provided by the imapsync tool created by Gilles
               Lamiral.
             </p>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              © 2025 Imapsync App. Available under Personal Use License for personal use.
+              Commercial use requires a separate license - contact <a
+                className="underline hover:text-foreground transition-colors"
+                href="mailto:me@casperengelmann.com"
+              >
+                me@casperengelmann.com
+              </a>
+            </p>
+
+            <p className="text-sm text-red-500 mt-1">
+              Note: Using this software in a business environment or for commercial purposes
+              without a valid commercial license is strictly prohibited.
+            </p>
           </div>
         </header>
 
