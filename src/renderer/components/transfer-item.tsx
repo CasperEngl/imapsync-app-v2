@@ -2,8 +2,9 @@ import type { VariantProps } from "class-variance-authority";
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
 import { useSelector } from "@xstate/store/react";
-import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, ChevronDown, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
 import { useDeferredValue, useRef } from "react";
+import { useScroll } from "react-use";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
@@ -82,8 +83,21 @@ export function TransferItem({
   const outputRef = useRef<HTMLPreElement>(null);
   const outputs = useDeferredValue(transfer.outputs);
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
+  const { y: scrollY } = useScroll(outputRef as React.RefObject<HTMLElement>);
 
   const config = statusConfig[transfer.status];
+
+  const isScrolledToBottom = outputRef.current
+    ? Math.abs((outputRef.current.scrollHeight - outputRef.current.clientHeight) - scrollY) < 1
+    : true;
+
+  const scrollToBottom = () => {
+    if (outputRef.current) {
+      outputRef.current.scrollTo({
+        top: outputRef.current.scrollHeight,
+      });
+    }
+  };
 
   return (
     <div>
@@ -228,8 +242,8 @@ export function TransferItem({
         <div className="flex gap-2">
           {transfer.status === "syncing"
             ? (
-              <Loader2 className="size-6 my-1 animate-spin" />
-            )
+                <Loader2 className="size-6 my-1 animate-spin" />
+              )
             : null}
 
           {/* Progress bar for syncing state */}
@@ -244,12 +258,12 @@ export function TransferItem({
             <p className="text-sm mt-1">
               {transfer.error
                 ? (
-                  <span className="text-red-500">
-                    Error:
-                    {" "}
-                    {transfer.error}
-                  </span>
-                )
+                    <span className="text-red-500">
+                      Error:
+                      {" "}
+                      {transfer.error}
+                    </span>
+                  )
                 : <span className="text-muted-foreground">{transfer.progress?.message || "No progress to show"}</span>}
             </p>
           </div>
@@ -281,13 +295,9 @@ export function TransferItem({
 
         {/* Add the details element for output */}
         <details
-          className="mt-4"
+          className="mt-4 relative"
           onToggle={() => {
-            if (outputRef.current) {
-              outputRef.current.scrollTo({
-                top: outputRef.current.scrollHeight,
-              });
-            }
+            scrollToBottom();
           }}
         >
           <summary className="cursor-pointer text-sm text-muted-foreground">
@@ -299,23 +309,34 @@ export function TransferItem({
           >
             {outputs.length > 0
               ? (
-                outputs.map(output => (
-                  <div
-                    className={cn(
-                      output.isError
-                        ? "bg-destructive text-destructive-foreground"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                    key={output.timestamp}
-                  >
-                    {output.content}
-                  </div>
-                ))
-              )
+                  outputs.map(output => (
+                    <div
+                      className={cn(
+                        output.isError
+                          ? "bg-destructive text-destructive-foreground"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                      key={output.timestamp}
+                    >
+                      {output.content}
+                    </div>
+                  ))
+                )
               : (
-                "No output available"
-              )}
+                  "No output available"
+                )}
           </pre>
+          <Button
+            className={cn(
+              "absolute bottom-2 right-2 size-8 p-0 opacity-0 transition transition-discrete",
+              !isScrolledToBottom && outputs.length > 0 ? "flex starting:opacity-0 opacity-100" : "opacity-0",
+            )}
+            onClick={scrollToBottom}
+            title="Scroll to bottom"
+            variant="outline"
+          >
+            <ChevronDown className="size-4" />
+          </Button>
         </details>
       </div>
     </div>
