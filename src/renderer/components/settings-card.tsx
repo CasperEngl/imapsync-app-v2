@@ -148,7 +148,7 @@ export function SettingsCard() {
         <div>
           <Label htmlFor={concurrentTransfersId}>Concurrent Transfers</Label>
           <p className="text-[0.8rem] text-muted-foreground">
-            You can enter any number of concurrent transfers. The minimum is 1, and the recommended is 5, but it depends on your system.
+            You can enter any number of concurrent transfers. The minimum is 1, and the recommended is 3, but it depends on your system.
           </p>
 
           <p className="text-[0.8rem] text-muted-foreground">
