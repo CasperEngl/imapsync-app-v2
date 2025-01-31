@@ -17,6 +17,7 @@ export default defineConfig({
     },
   },
   preload: {
+    plugins: [externalizeDepsPlugin()],
     build: {
       lib: {
         entry: path.resolve(__dirname, "electron/preload.ts"),
