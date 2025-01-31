@@ -33,6 +33,7 @@ import type { TransferWithState } from "./schemas.js";
 
 import { ImportDescription } from "./components/import-description.js";
 import { store } from "./store.js";
+import { Highlight } from "./components/highlight.js";
 
 export interface StartAllButtonState {
   isSyncing: boolean;
@@ -113,6 +114,8 @@ export function App() {
   }, [transfers, newTransfer]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const transferRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [highlightedTransferId, setHighlightedTransferId] = useState<string | null>(null);
 
   const handleAddTransfer = () => {
     const id = idGenerator();
@@ -230,6 +233,10 @@ export function App() {
     } catch {
       toast.error("Failed to export transfers");
     }
+  };
+
+  const highlightTransfer = (id: string) => {
+    setHighlightedTransferId(id);
   };
 
   const appBarHeightStyle = useMemo(() => {
@@ -478,18 +485,22 @@ export function App() {
               <CardHeader className="@container/transfer-status-cards flex flex-col gap-2">
                 <div className="grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-4 gap-2">
                   <TransferStatusCard
+                    onTransferClick={highlightTransfer}
                     status="idle"
                     transfers={keyedTransfers.idle ?? []}
                   />
                   <TransferStatusCard
+                    onTransferClick={highlightTransfer}
                     status="syncing"
                     transfers={keyedTransfers.syncing ?? []}
                   />
                   <TransferStatusCard
+                    onTransferClick={highlightTransfer}
                     status="completed"
                     transfers={keyedTransfers.completed ?? []}
                   />
                   <TransferStatusCard
+                    onTransferClick={highlightTransfer}
                     status="error"
                     transfers={keyedTransfers.error ?? []}
                   />
@@ -498,14 +509,14 @@ export function App() {
                 <div className="flex gap-2">
                   {transfers.length > 0
                     ? (
-                        <Button
-                          disabled={isSyncing || isAllCompleted}
-                          onClick={handleStartAll}
-                          variant={startAllButton.variant}
-                        >
-                          {startAllButton.text}
-                        </Button>
-                      )
+                      <Button
+                        disabled={isSyncing || isAllCompleted}
+                        onClick={handleStartAll}
+                        variant={startAllButton.variant}
+                      >
+                        {startAllButton.text}
+                      </Button>
+                    )
                     : null}
 
                   {transfers.length > 0 && (
@@ -562,22 +573,37 @@ export function App() {
               <CardContent className="space-y-4">
                 {transfers.length === 0
                   ? (
-                      <div className="text-center py-6 text-gray-500">
-                        No transfers added yet. Configure a new transfer to get
-                        started.
-                      </div>
-                    )
+                    <div className="text-center py-6 text-gray-500">
+                      No transfers added yet. Configure a new transfer to get
+                      started.
+                    </div>
+                  )
                   : (
-                      transfers.map((transfer, index) => (
-                        <div key={transfer.id}>
-                          {index > 0 && <div className="h-px bg-border my-6" />}
+                    transfers.map((transfer, index) => (
+                      <div
+                        key={transfer.id}
+                        ref={(element) => {
+                          if (element) {
+                            transferRefs.current.set(transfer.id, element);
+                          } else {
+                            transferRefs.current.delete(transfer.id);
+                          }
+                        }}
+                      >
+                        {index > 0 && <div className="h-px bg-border my-6" />}
+                        <Highlight
+                          active={highlightedTransferId === transfer.id}
+                          scrollTo={true}
+                          className="w-full data-[highlighted=true]:outline-offset-16"
+                        >
                           <TransferItem
                             hostOptions={hostOptions}
                             transfer={transfer}
                           />
-                        </div>
-                      ))
-                    )}
+                        </Highlight>
+                      </div>
+                    ))
+                  )}
               </CardContent>
             </Card>
           </div>
