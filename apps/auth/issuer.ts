@@ -1,9 +1,9 @@
 import { issuer } from "@openauthjs/openauth";
+import { subjects } from "auth-subjects/subjects.js";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
 import type { StorageAdapter } from "@openauthjs/openauth/storage/storage";
 import { CodeUI } from "@openauthjs/openauth/ui/code";
 import { and, eq, gt, isNull, like, or } from "drizzle-orm";
-import { subjects } from "./subjects";
 import { db } from "./db/db";
 import { schema } from "./db/schema";
 

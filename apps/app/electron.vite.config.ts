@@ -26,6 +26,7 @@ export default defineConfig({
     },
   },
   renderer: {
+    clearScreen: false,
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

@@ -12,6 +12,17 @@ import type {
 
 Store.initRenderer();
 
+// Register custom protocol for OpenAuth
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('imapsync-app', process.execPath, [
+      path.join(__dirname, process.argv[1])
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient('imapsync-app');
+}
+
 // Track all running processes
 const runningProcesses = new Map<string, ReturnType<typeof spawn>>();
 
@@ -80,6 +91,16 @@ async function createWindow() {
     },
   });
 
+  // Handle external links
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    // Allow OAuth provider URLs to open in the default browser
+    if (url.startsWith('http://localhost:3001')) {
+      shell.openExternal(url);
+      return { action: "deny" };
+    }
+    return { action: "allow" };
+  });
+
   if (!app.isPackaged) {
     await win.loadURL("http://localhost:5173");
     win.webContents.openDevTools({
@@ -89,6 +110,48 @@ async function createWindow() {
     await win.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
 }
+
+// Handle the protocol callback
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  
+  const callbackUrl = new URL(url.replace('imapsync-app://', 'http://'));
+  const code = callbackUrl.searchParams.get('code');
+  
+  if (code) {
+    const redirectUrl = process.env.NODE_ENV === "development" 
+      ? `http://localhost:5173?code=${code}`
+      : `file://${path.join(__dirname, "../renderer/index.html")}?code=${code}`;
+      
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.loadURL(redirectUrl);
+    });
+  }
+});
+
+// Handle second instance
+app.on('second-instance', (event, commandLine) => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (win) {
+    if (win.isMinimized()) win.restore();
+    win.focus();
+
+    // Handle protocol url from second instance
+    const url = commandLine.find(arg => arg.startsWith('imapsync-app://'));
+    if (url) {
+      const callbackUrl = new URL(url.replace('imapsync-app://', 'http://'));
+      const code = callbackUrl.searchParams.get('code');
+      
+      if (code) {
+        const redirectUrl = process.env.NODE_ENV === "development" 
+          ? `http://localhost:5173?code=${code}`
+          : `file://${path.join(__dirname, "../renderer/index.html")}?code=${code}`;
+          
+        win.loadURL(redirectUrl);
+      }
+    }
+  }
+});
 
 void app.whenReady().then(() => {
   void createWindow();

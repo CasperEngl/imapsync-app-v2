@@ -2,14 +2,15 @@
   "name": "imapsync",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "electron-builder": "turbo run electron-builder",
     "lint:fix": "turbo run lint:fix",
-    "ts:check": "turbo run ts:check",
-    "electron-builder": "turbo run electron-builder"
+    "ts:check": "turbo run ts:check"
   },
   "devDependencies": {
     "turbo": "latest"
