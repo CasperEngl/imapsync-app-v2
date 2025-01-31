@@ -2,23 +2,20 @@
 
 This software is available under two licenses:
 
-## 1. Personal Use License (MIT License)
+## 1. Personal Use License
 
 For personal, non-commercial use only:
-
-MIT License
 
 Copyright (c) 2025 Imapsync App
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+of this software and associated documentation files (the "Software"), to use
+the Software for personal, non-commercial purposes only, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The Software may not be distributed, sublicensed, shared, or made available to others in any form.
+2. You may not modify, merge, publish, or create derivative works of the Software.
+3. The above copyright notice and this permission notice shall be included in all
+copies of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -30,7 +27,7 @@ SOFTWARE.
 
 ## 2. Commercial License
 
-For business and commercial use, a separate license is required. The MIT License above does not apply to commercial use of this software.
+For business and commercial use, a separate license is required. The Personal Use License above does not apply to commercial use of this software.
 
 To obtain a commercial license, please contact:
 
