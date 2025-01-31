@@ -2,8 +2,8 @@ import type { VariantProps } from "class-variance-authority";
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
 import { useSelector } from "@xstate/store/react";
-import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Pause, Play, RotateCcw, X } from "lucide-react";
-import { useDeferredValue } from "react";
+import { ArrowLeftRight, CheckCircle2, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
+import { useDeferredValue, useRef } from "react";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
@@ -32,7 +32,7 @@ const statusConfig = {
     icon: <Loader2 className="size-4 animate-spin" />,
     disabled: false,
     className: "",
-    onClick: () => {},
+    onClick: () => { },
   },
   completed: {
     text: "Restart",
@@ -79,6 +79,7 @@ export function TransferItem({
   transfer,
   hostOptions,
 }: TransferItemProps) {
+  const outputRef = useRef<HTMLPreElement>(null);
   const outputs = useDeferredValue(transfer.outputs);
   const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
 
@@ -227,8 +228,8 @@ export function TransferItem({
         <div className="flex gap-2">
           {transfer.status === "syncing"
             ? (
-                <Loader2 className="size-6 my-1 animate-spin" />
-              )
+              <Loader2 className="size-6 my-1 animate-spin" />
+            )
             : null}
 
           {/* Progress bar for syncing state */}
@@ -243,11 +244,12 @@ export function TransferItem({
             <p className="text-sm mt-1">
               {transfer.error
                 ? (
-                    <span className="text-red-500">
-                      Error:{" "}
-                      {transfer.error}
-                    </span>
-                  )
+                  <span className="text-red-500">
+                    Error:
+                    {" "}
+                    {transfer.error}
+                  </span>
+                )
                 : <span className="text-muted-foreground">{transfer.progress?.message || "No progress to show"}</span>}
             </p>
           </div>
@@ -278,29 +280,41 @@ export function TransferItem({
         </div>
 
         {/* Add the details element for output */}
-        <details className="mt-4">
+        <details
+          className="mt-4"
+          onToggle={() => {
+            if (outputRef.current) {
+              outputRef.current.scrollTo({
+                top: outputRef.current.scrollHeight,
+              });
+            }
+          }}
+        >
           <summary className="cursor-pointer text-sm text-muted-foreground">
             View Output
           </summary>
-          <pre className="mt-2 p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[400px] overflow-auto snap-proximity snap-y content-end flex flex-col after:block after:snap-end">
+          <pre
+            className="mt-2 p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[400px] overflow-auto snap-proximity snap-y content-end flex flex-col after:block after:snap-end"
+            ref={outputRef}
+          >
             {outputs.length > 0
               ? (
-                  outputs.map(output => (
-                    <div
-                      className={cn(
-                        output.isError
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                      key={output.timestamp}
-                    >
-                      {output.content}
-                    </div>
-                  ))
-                )
+                outputs.map(output => (
+                  <div
+                    className={cn(
+                      output.isError
+                        ? "bg-destructive text-destructive-foreground"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                    key={output.timestamp}
+                  >
+                    {output.content}
+                  </div>
+                ))
+              )
               : (
-                  "No output available"
-                )}
+                "No output available"
+              )}
           </pre>
         </details>
       </div>
