@@ -7,7 +7,7 @@ export function AppHeader() {
   return (
     <header className="relative bg-white shadow py-4">
       <div className="container mx-auto grid grid-cols-[1fr_auto]">
-        <div>
+        <div className="text-pretty">
           <h1 className="text-3xl font-bold">imapsync App</h1>
 
           <div className="text-sm text-muted-foreground">

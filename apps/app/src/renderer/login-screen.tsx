@@ -4,16 +4,16 @@ export function LoginScreen() {
   const auth = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-2xl mx-auto px-4 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          IMAP Sync App
-        </h1>
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto">
         {auth?.login.error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {auth?.login.error.message}
           </div>
         )}
+        <h1 className="text-accent-foreground mb-6 text-2xl font-bold max-w-lg text-pretty">
+          Please log in to access the imapsync App.
+        </h1>
         <button
           onClick={() => auth?.login.mutate()}
           disabled={auth?.login.isPending}

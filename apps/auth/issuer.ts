@@ -1,72 +1,17 @@
 import { issuer } from "@openauthjs/openauth";
-import { subjects } from "auth-subjects/subjects.js";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
-import type { StorageAdapter } from "@openauthjs/openauth/storage/storage";
 import { CodeUI } from "@openauthjs/openauth/ui/code";
-import { and, eq, gt, isNull, like, or } from "drizzle-orm";
+import { subjects } from "auth-subjects/subjects.js";
+import { eq } from "drizzle-orm";
+import { Resend } from "resend";
 import { db } from "./db/db";
 import { schema } from "./db/schema";
+import { SqliteStorage } from "./sqlite-storage";
+import { config } from "dotenv";
 
-function SqliteStorage(): StorageAdapter {
-  return {
-    async get(key: string[]): Promise<Record<string, any> | undefined> {
-      const now = new Date();
-      const result = await db.query.authStorage.findFirst({
-        where: and(
-          eq(schema.authStorage.key, key.join(":")),
-          or(isNull(schema.authStorage.expiry), gt(schema.authStorage.expiry, now))
-        ),
-      });
+config({ path: "../../.env.local" });
 
-      if (!result) return undefined;
-      return JSON.parse(result.value);
-    },
-    async set(key: string[], value: any, expiry?: Date): Promise<void> {
-      const stringKey = key.join(":");
-      const stringValue = JSON.stringify(value);
-
-      await db
-        .insert(schema.authStorage)
-        .values({
-          key: stringKey,
-          value: stringValue,
-          expiry: expiry ?? null,
-        })
-        .onConflictDoUpdate({
-          target: schema.authStorage.key,
-          set: {
-            value: stringValue,
-            expiry: expiry ?? null,
-          },
-        });
-    },
-
-    async remove(key: string[]): Promise<void> {
-      await db
-        .delete(schema.authStorage)
-        .where(eq(schema.authStorage.key, key.join(":")));
-    },
-
-    async *scan(prefix: string[]): AsyncIterable<[string[], any]> {
-      const now = new Date();
-      const prefixStr = prefix.join(":");
-
-      const results = await db
-        .select()
-        .from(schema.authStorage)
-        .where(
-          and(
-            like(schema.authStorage.key, `${prefixStr}%`),
-            or(isNull(schema.authStorage.expiry), gt(schema.authStorage.expiry, now))
-          )
-        );
-
-      for (const result of results) {
-        yield [result.key.split(":"), JSON.parse(result.value)];
-      }
-    },
-  };
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function getUser(email: string) {
   // Look up the user in the database by email
@@ -91,8 +36,20 @@ export default issuer({
     code: CodeProvider(
       CodeUI({
         sendCode: async (claims, code) => {
-          // In production, you would send this code via email
-          console.log(`[CodeProvider] Auth code for ${claims.email}: ${code}`);
+          if (process.env.NODE_ENV === "production") {
+            const { error } = await resend.emails.send({
+              from: "noreply@casperengelmann.com",
+              to: claims.email,
+              subject: "Your imapsync App code",
+              text: `Your code is: ${code}`,
+            });
+
+            if (error) {
+              console.error(`[CodeProvider] Error sending email: ${error}`);
+            }
+          } else {
+            console.log(`[CodeProvider] Auth code for ${claims.email}: ${code}`);
+          }
         },
       })
     ),

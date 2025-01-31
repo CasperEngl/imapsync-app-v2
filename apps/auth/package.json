@@ -9,7 +9,9 @@
     "@libsql/client": "^0.14.0",
     "@openauthjs/openauth": "^0.3.6",
     "auth-subjects": "workspace:*",
+    "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.1",
+    "resend": "^4.1.1",
     "valibot": "^1.0.0-beta.14"
   },
   "devDependencies": {
