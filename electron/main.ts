@@ -379,7 +379,7 @@ async function asyncPool<T, U>(
 }
 
 ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState[]) => {
-  const CONCURRENT_TRANSFERS = 3;
+  const CONCURRENT_TRANSFERS = store.get("concurrentTransfers", 3);
 
   await asyncPool(
     CONCURRENT_TRANSFERS,
