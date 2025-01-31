@@ -7,6 +7,7 @@ import type {
 
 import { createStoreWithProducer } from "@xstate/store";
 import { current, produce } from "immer";
+import { startTransition } from "react";
 import { idGenerator } from "~/renderer/utils/id.js";
 
 export interface StoreContext {
@@ -219,10 +220,12 @@ export const store = createStoreWithProducer(produce, {
     ) => {
       const transfer = context.transfers.find(transfer => transfer.id === event.id);
       if (transfer) {
-        transfer.outputs.push({
-          content: event.content,
-          isError: event.isError,
-          timestamp: Date.now(),
+        startTransition(() => {
+          transfer.outputs.push({
+            content: event.content,
+            isError: event.isError,
+            timestamp: Date.now(),
+          });
         });
       }
     },
