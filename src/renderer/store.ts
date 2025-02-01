@@ -1,3 +1,7 @@
+import { createStoreWithProducer } from "@xstate/store";
+import { current, produce } from "immer";
+import { startTransition } from "react";
+
 import type {
   Transfer,
   TransferState,
@@ -5,9 +9,6 @@ import type {
   TransferWithState,
 } from "~/renderer/schemas.js";
 
-import { createStoreWithProducer } from "@xstate/store";
-import { current, produce } from "immer";
-import { startTransition } from "react";
 import { idGenerator } from "~/renderer/utils/id.js";
 
 export interface StoreContext {

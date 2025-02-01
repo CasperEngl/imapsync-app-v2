@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { ThemeProvider } from "~/renderer/components/theme-provider.js";
 import { Toaster } from "~/renderer/components/ui/sonner.js";
 
