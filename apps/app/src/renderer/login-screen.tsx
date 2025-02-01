@@ -15,9 +15,9 @@ export function LoginScreen() {
           Please log in to access the imapsync App.
         </h1>
         <button
-          onClick={() => auth?.login.mutate()}
-          disabled={auth?.login.isPending}
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          disabled={auth?.login.isPending}
+          onClick={() => auth?.login.mutate()}
         >
           {auth?.login.isPending ? "Processing..." : "Login"}
         </button>

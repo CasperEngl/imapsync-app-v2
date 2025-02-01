@@ -86,8 +86,8 @@ export function TransferStatusCard({
             <DropdownMenuTrigger asChild>
               <Button
                 className="rounded-none w-full"
-                variant="ghost"
                 disabled={transfers.length === 0}
+                variant="ghost"
               >
                 View Transfers
               </Button>
@@ -114,12 +114,12 @@ export function TransferStatusCard({
                     </div>
                     {transfer.error
                       ? (
-                        <p className="font-medium text-red-500 text-xs text-pretty">
-                          Error:
-                          {" "}
-                          {transfer.error}
-                        </p>
-                      )
+                          <p className="font-medium text-red-500 text-xs text-pretty">
+                            Error:
+                            {" "}
+                            {transfer.error}
+                          </p>
+                        )
                       : null}
                   </DropdownMenuItem>
                 </div>

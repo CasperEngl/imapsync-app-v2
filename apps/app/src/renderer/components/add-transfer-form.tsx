@@ -1,6 +1,6 @@
+import { Combobox } from "~/renderer/components/combobox.js";
+import { Input } from "~/renderer/components/ui/input.js";
 import type { Transfer } from "~/renderer/schemas.js";
-import { Combobox } from "./combobox.js";
-import { Input } from "./ui/input.js";
 
 interface AddTransferFormProps {
   newTransfer: {
@@ -93,4 +93,4 @@ export function AddTransferForm({
       </div>
     </form>
   );
-} 
+}

@@ -1,5 +1,5 @@
-import { useAuth } from '~/renderer/auth-provider.hooks.js';
-import { Button } from '~/renderer/components/ui/button.js';
+import { useAuth } from "~/renderer/auth-provider.hooks.js";
+import { Button } from "~/renderer/components/ui/button.js";
 
 export function AppHeader() {
   const auth = useAuth();
@@ -42,5 +42,5 @@ export function AppHeader() {
         )}
       </div>
     </header>
-  )
+  );
 }

@@ -1,8 +1,11 @@
-import { useSelector } from "@xstate/store/react";
 import type { VariantProps } from "class-variance-authority";
+
+import { useSelector } from "@xstate/store/react";
 import { match } from "ts-pattern";
-import { Button } from "~/renderer/components/ui/button.js";
+
 import type { buttonVariants } from "~/renderer/components/ui/button.styles.js";
+
+import { Button } from "~/renderer/components/ui/button.js";
 import { store } from "~/renderer/store.js";
 
 export interface StartAllButtonState {
@@ -40,15 +43,17 @@ export function StartAllButton() {
       text: "Start all idle",
     })) as { variant: "default" | "outline" | "success"; text: string };
 
-    return <Button
-          disabled={isSyncing || isAllCompleted}
-          onClick={() => {
-            store.send({
-              type: "startAll",
-            });
-          }}
-          variant={startAllButton.variant}
-        >
-          {startAllButton.text}
-        </Button>
+  return (
+    <Button
+      disabled={isSyncing || isAllCompleted}
+      onClick={() => {
+        store.send({
+          type: "startAll",
+        });
+      }}
+      variant={startAllButton.variant}
+    >
+      {startAllButton.text}
+    </Button>
+  );
 }

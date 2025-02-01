@@ -1,6 +1,8 @@
-import { TransferStatusCard } from "../transfer-status-card.js";
-import type { TransferWithState } from "../schemas.js";
 import { useState } from "react";
+
+import type { TransferWithState } from "../schemas.js";
+
+import { TransferStatusCard } from "../transfer-status-card.js";
 
 interface TransferStatusOverviewProps {
   keyedTransfers: {
@@ -21,25 +23,25 @@ export function TransferStatusOverview({ keyedTransfers }: TransferStatusOvervie
   return (
     <div className="grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-4 gap-2">
       <TransferStatusCard
+        onTransferClick={highlightTransfer}
         status="idle"
         transfers={keyedTransfers.idle ?? []}
-        onTransferClick={highlightTransfer}
       />
       <TransferStatusCard
+        onTransferClick={highlightTransfer}
         status="syncing"
         transfers={keyedTransfers.syncing ?? []}
-        onTransferClick={highlightTransfer}
       />
       <TransferStatusCard
+        onTransferClick={highlightTransfer}
         status="completed"
         transfers={keyedTransfers.completed ?? []}
-        onTransferClick={highlightTransfer}
       />
       <TransferStatusCard
+        onTransferClick={highlightTransfer}
         status="error"
         transfers={keyedTransfers.error ?? []}
-        onTransferClick={highlightTransfer}
       />
     </div>
   );
-} 
+}

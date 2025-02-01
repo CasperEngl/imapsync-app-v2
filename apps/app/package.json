@@ -1,12 +1,15 @@
 {
   "name": "app",
+  "type": "module",
   "version": "1.0.0",
   "description": "Imapsync GUI",
-  "keywords": [],
-  "license": "SEE LICENSE IN LICENSE.md",
   "author": "Casper Engelmann <me@casperengelmann.com>",
-  "type": "module",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "keywords": [],
   "main": "dist/main/main.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "rm -rf release && electron-vite build",
     "dev": "electron-vite dev",
@@ -27,7 +30,6 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@tanstack/react-query": "^5.65.1",
     "@xstate/store": "^2.6.2",
-    "auth-subjects": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
@@ -72,9 +74,6 @@
     "vite": "^6.0.11",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.4"
-  },
-  "engines": {
-    "node": ">=22"
   },
   "build": {
     "appId": "com.imapsync.app",

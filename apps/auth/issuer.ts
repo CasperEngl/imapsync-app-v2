@@ -1,15 +1,24 @@
 import { issuer } from "@openauthjs/openauth";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
+import { createSubjects } from "@openauthjs/openauth/subject";
 import { CodeUI } from "@openauthjs/openauth/ui/code";
-import { subjects } from "auth-subjects/subjects.js";
+import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import { Resend } from "resend";
+import * as v from "valibot";
 import { db } from "./db/db";
 import { schema } from "./db/schema";
 import { SqliteStorage } from "./sqlite-storage";
-import { config } from "dotenv";
 
 config({ path: "../../.env.local" });
+
+export const subjects = createSubjects({
+  user: v.object({
+    id: v.number(),
+    email: v.string(),
+    createdAt: v.string(),
+  }),
+});
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

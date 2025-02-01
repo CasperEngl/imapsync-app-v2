@@ -1,8 +1,10 @@
 import { useSelector } from "@xstate/store/react";
 import { toast } from "sonner";
-import { store } from "~/renderer/store.js";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
+
 import { Button } from "~/renderer/components/ui/button.js";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
+import { store } from "~/renderer/store.js";
+
 export function ExportTransfers() {
   const transfers = useSelector(store, snapshot => snapshot.context.transfers);
   const settings = useSelector(store, snapshot => snapshot.context.settings);
@@ -36,5 +38,5 @@ export function ExportTransfers() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

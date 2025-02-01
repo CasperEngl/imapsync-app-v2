@@ -1,12 +1,14 @@
 import { useSelector } from "@xstate/store/react";
-import { useRef, useId } from "react";
+import { useId, useRef } from "react";
 import { toast } from "sonner";
+
+import type { TransferWithState } from "~/renderer/schemas.js";
+
 import { ImportDescription } from "~/renderer/components/import-description.js";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Checkbox } from "~/renderer/components/ui/checkbox.js";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
 import { Label } from "~/renderer/components/ui/label.js";
-import type { TransferWithState } from "~/renderer/schemas.js";
 import { store } from "~/renderer/store.js";
 import { convertCsvToTransfers } from "~/renderer/utils/convert-csv-to-transfers.js";
 
@@ -126,4 +128,4 @@ export function ImportControls() {
       </div>
     </div>
   );
-} 
+}
