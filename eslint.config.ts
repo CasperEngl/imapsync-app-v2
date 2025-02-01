@@ -147,7 +147,8 @@ export default antfu({
               "side-effect",
               "type",
               ["builtin-type", "external-type"],
-              ["builtin", "external"],
+              "builtin",
+              "external",
               "internal-type",
               "internal",
               ["parent-type", "sibling-type", "index-type"],
@@ -160,7 +161,16 @@ export default antfu({
             type: "natural",
             ignoreCase: false,
             sortSideEffects: true,
-            internalPattern: ["^@/.*"],
+            internalPattern: ["^@/.*", "^~/.*"],
+            customGroups: {
+              value: {
+                react: ["^react$", "^react-.*"],
+                style: ["\\.css$", "\\.scss$", "\\.less$", "\\.sass$"],
+              },
+              type: {
+                react: ["^react$", "^react-.*"],
+              },
+            },
           },
         ],
       },
