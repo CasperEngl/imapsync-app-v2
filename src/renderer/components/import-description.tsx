@@ -1,6 +1,6 @@
 import { ArrowRightLeft } from "lucide-react";
 
-import type { Transfer } from "../schemas.js";
+import type { Transfer } from "~/renderer/schemas.js";
 
 export function ImportDescription({
   transfer,

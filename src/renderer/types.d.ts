@@ -1,4 +1,4 @@
-import type { TransferWithState } from "./store.js";
+import type { TransferWithState } from "~/renderer/schemas.js";
 
 interface TransferData {
   id: string;

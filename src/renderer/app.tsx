@@ -8,7 +8,13 @@ import { useId, useMemo, useRef, useState } from "react";
 import { useMeasure } from "react-use";
 import { toast } from "sonner";
 import { match } from "ts-pattern";
+
+import type { buttonVariants } from "~/renderer/components/ui/button.styles.js";
+import type { TransferWithState } from "~/renderer/schemas.js";
+
 import { Combobox } from "~/renderer/components/combobox.js";
+import { Highlight } from "~/renderer/components/highlight.js";
+import { ImportDescription } from "~/renderer/components/import-description.js";
 import { SettingsCard } from "~/renderer/components/settings-card.js";
 import { TransferItem } from "~/renderer/components/transfer-item.js";
 import { Button } from "~/renderer/components/ui/button.js";
@@ -24,16 +30,10 @@ import { Checkbox } from "~/renderer/components/ui/checkbox.js";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Providers } from "~/renderer/providers.js";
+import { store } from "~/renderer/store.js";
 import { TransferStatusCard } from "~/renderer/transfer-status-card.js";
 import { convertCsvToTransfers } from "~/renderer/utils/convert-csv-to-transfers.js";
 import { idGenerator } from "~/renderer/utils/id.js";
-
-import type { buttonVariants } from "./components/ui/button.styles.js";
-import type { TransferWithState } from "./schemas.js";
-
-import { Highlight } from "./components/highlight.js";
-import { ImportDescription } from "./components/import-description.js";
-import { store } from "./store.js";
 
 export interface StartAllButtonState {
   isSyncing: boolean;

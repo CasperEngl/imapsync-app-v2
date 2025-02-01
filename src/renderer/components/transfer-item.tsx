@@ -1,18 +1,19 @@
 import type { VariantProps } from "class-variance-authority";
-import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
 import { useSelector } from "@xstate/store/react";
 import { ArrowLeftRight, CheckCircle2, ChevronDown, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
 import { useDeferredValue, useRef } from "react";
 import { useScroll } from "react-use";
+
+import type { badgeVariants } from "~/renderer/components/ui/badge.styles.js";
+import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
+
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Progress } from "~/renderer/components/ui/progress.js";
 import { cn } from "~/renderer/lib/utils.js";
 import { store } from "~/renderer/store.js";
-
-import type { badgeVariants } from "./ui/badge.styles.js";
 
 const statusConfig = {
   idle: {

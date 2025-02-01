@@ -1,17 +1,12 @@
+import { ArrowLeftRight, CheckCircle, Clock, RefreshCw, XCircle } from "lucide-react";
+
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
-import { ArrowLeftRight, CheckCircle, Clock, RefreshCw, XCircle } from "lucide-react";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "~/renderer/components/ui/card.js";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
+import { cn } from "~/renderer/lib/utils.js";
 import { store } from "~/renderer/store.js";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./components/ui/dropdown-menu.js";
-import { cn } from "./lib/utils.js";
 
 const keyMap = {
   idle: {
