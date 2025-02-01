@@ -1,13 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "../lib/utils.js"
+import * as React from "react";
+
+import { cn } from "../lib/utils.js";
 
 interface HighlightProps {
-  children: React.ReactNode
-  className?: string
-  active: boolean
-  scrollTo?: boolean
+  children: React.ReactNode;
+  className?: string;
+  active: boolean;
+  scrollTo?: boolean;
 }
 
 export function Highlight({
@@ -16,29 +17,29 @@ export function Highlight({
   active,
   scrollTo = false,
 }: HighlightProps) {
-  const ref = React.useRef<HTMLDivElement>(null)
-  const [isHighlighted, setIsHighlighted] = React.useState(active)
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [isHighlighted, setIsHighlighted] = React.useState(active);
 
   React.useEffect(() => {
     if (!active) {
-      setIsHighlighted(false)
+      setIsHighlighted(false);
 
-      return
+      return;
     }
 
-    setIsHighlighted(true)
+    setIsHighlighted(true);
 
     // Scroll into view if scrollTo is true
     if (scrollTo && ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth", block: "center" })
+      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     const timer = setTimeout(() => {
-      setIsHighlighted(false)
-    }, 1500)
+      setIsHighlighted(false);
+    }, 1500);
 
-    return () => clearTimeout(timer)
-  }, [active, scrollTo])
+    return () => clearTimeout(timer);
+  }, [active, scrollTo]);
 
   return (
     <div
@@ -51,5 +52,5 @@ export function Highlight({
     >
       {children}
     </div>
-  )
+  );
 }

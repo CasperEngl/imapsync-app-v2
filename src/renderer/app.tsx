@@ -31,9 +31,9 @@ import { idGenerator } from "~/renderer/utils/id.js";
 import type { buttonVariants } from "./components/ui/button.styles.js";
 import type { TransferWithState } from "./schemas.js";
 
+import { Highlight } from "./components/highlight.js";
 import { ImportDescription } from "./components/import-description.js";
 import { store } from "./store.js";
-import { Highlight } from "./components/highlight.js";
 
 export interface StartAllButtonState {
   isSyncing: boolean;
@@ -511,14 +511,14 @@ export function App() {
                 <div className="flex gap-2">
                   {transfers.length > 0
                     ? (
-                      <Button
-                        disabled={isSyncing || isAllCompleted}
-                        onClick={handleStartAll}
-                        variant={startAllButton.variant}
-                      >
-                        {startAllButton.text}
-                      </Button>
-                    )
+                        <Button
+                          disabled={isSyncing || isAllCompleted}
+                          onClick={handleStartAll}
+                          variant={startAllButton.variant}
+                        >
+                          {startAllButton.text}
+                        </Button>
+                      )
                     : null}
 
                   {transfers.length > 0 && (
@@ -575,37 +575,37 @@ export function App() {
               <CardContent className="space-y-4">
                 {transfers.length === 0
                   ? (
-                    <div className="text-center py-6 text-gray-500">
-                      No transfers added yet. Configure a new transfer to get
-                      started.
-                    </div>
-                  )
-                  : (
-                    transfers.map((transfer, index) => (
-                      <div
-                        key={transfer.id}
-                        ref={(element) => {
-                          if (element) {
-                            transferRefs.current.set(transfer.id, element);
-                          } else {
-                            transferRefs.current.delete(transfer.id);
-                          }
-                        }}
-                      >
-                        {index > 0 && <div className="h-px bg-border my-6" />}
-                        <Highlight
-                          active={highlightedTransferId === transfer.id}
-                          scrollTo={true}
-                          className="w-full data-[highlighted=true]:outline-offset-16"
-                        >
-                          <TransferItem
-                            hostOptions={hostOptions}
-                            transfer={transfer}
-                          />
-                        </Highlight>
+                      <div className="text-center py-6 text-gray-500">
+                        No transfers added yet. Configure a new transfer to get
+                        started.
                       </div>
-                    ))
-                  )}
+                    )
+                  : (
+                      transfers.map((transfer, index) => (
+                        <div
+                          key={transfer.id}
+                          ref={(element) => {
+                            if (element) {
+                              transferRefs.current.set(transfer.id, element);
+                            } else {
+                              transferRefs.current.delete(transfer.id);
+                            }
+                          }}
+                        >
+                          {index > 0 && <div className="h-px bg-border my-6" />}
+                          <Highlight
+                            active={highlightedTransferId === transfer.id}
+                            className="w-full data-[highlighted=true]:outline-offset-16"
+                            scrollTo
+                          >
+                            <TransferItem
+                              hostOptions={hostOptions}
+                              transfer={transfer}
+                            />
+                          </Highlight>
+                        </div>
+                      ))
+                    )}
               </CardContent>
             </Card>
           </div>
@@ -615,7 +615,9 @@ export function App() {
           <div className="max-w-prose">
             <p className="text-sm text-muted-foreground">
               © 2025 Imapsync App. Available under Personal Use License for personal use.
-              Commercial use requires a separate license - contact <a
+              Commercial use requires a separate license - contact
+              {" "}
+              <a
                 className="underline hover:text-foreground transition-colors"
                 href="mailto:me@casperengelmann.com"
               >
