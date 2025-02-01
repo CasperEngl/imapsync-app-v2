@@ -4,6 +4,7 @@ import { ArrowLeftRight, CheckCircle, Clock, RefreshCw, XCircle } from "lucide-r
 import { Button } from "~/renderer/components/ui/button.js";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "~/renderer/components/ui/card.js";
 import { store } from "~/renderer/store.js";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,10 +102,10 @@ export function TransferStatusCard({
                   <div key={transfer.id}>
                     {index > 0 && <div className="h-px bg-border" />}
                     <DropdownMenuItem
+                      className="p-4 flex-col items-start rounded-none"
                       onClick={() => {
                         onTransferClick(transfer.id);
                       }}
-                      className="p-4 flex-col items-start rounded-none"
                     >
                       <div className="text-xs text-muted-foreground">
                         ID:
@@ -116,13 +117,15 @@ export function TransferStatusCard({
                         <ArrowLeftRight className="size-4" />
                         <span className="font-medium">{transfer.destination.user}</span>
                       </div>
-                      {transfer.error ? (
-                        <p className="font-medium text-red-500 text-xs text-pretty">
-                          Error:
-                          {" "}
-                          {transfer.error}
-                        </p>
-                      ) : null}
+                      {transfer.error
+                        ? (
+                            <p className="font-medium text-red-500 text-xs text-pretty">
+                              Error:
+                              {" "}
+                              {transfer.error}
+                            </p>
+                          )
+                        : null}
                     </DropdownMenuItem>
                   </div>
                 ))}
