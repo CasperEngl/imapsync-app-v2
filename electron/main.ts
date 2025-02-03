@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/electron/main";
 import dayjs from "dayjs";
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import Store from "electron-store";
@@ -6,9 +7,13 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 
 import type {
-  TransferState,
+  TransferState,  
   TransferWithState,
 } from "../src/renderer/schemas.js";
+
+Sentry.init({
+  dsn: "https://2ef398fb3103913aa8b919833e378ef6@o4508755915571200.ingest.de.sentry.io/4508755917013072",
+});
 
 Store.initRenderer();
 

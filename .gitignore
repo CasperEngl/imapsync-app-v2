@@ -152,3 +152,9 @@ db.sqlite-wal
 
 # Turbo
 .turbo
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Sentry
+sentry.properties
