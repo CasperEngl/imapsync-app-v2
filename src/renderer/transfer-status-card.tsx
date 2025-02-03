@@ -57,7 +57,7 @@ export function TransferStatusCard({
             </div>
           </CardDescription>
         </CardContent>
-        <CardFooter className="flex flex-col @[190px]/transfer-status-card:flex-row p-0 w-full @max-[190px]/transfer-status-card:divide-y @[190px]/transfer-status-card:divide-x divide-border border-t">
+        <CardFooter className="flex flex-col @[230px]/transfer-status-card:flex-row p-0 w-full @max-[230px]/transfer-status-card:divide-y @[230px]/transfer-status-card:divide-x divide-border border-t">
           <Button
             className="h-auto w-full rounded-none"
             onClick={() => {
