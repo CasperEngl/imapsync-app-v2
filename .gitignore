@@ -144,3 +144,11 @@ release/
 
 # Mac
 .DS_Store
+
+# Drizzle
+db.sqlite
+db.sqlite-shm
+db.sqlite-wal
+
+# Turbo
+.turbo
