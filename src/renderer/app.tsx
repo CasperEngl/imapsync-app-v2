@@ -13,7 +13,7 @@ import type { buttonVariants } from "~/renderer/components/ui/button.styles.js";
 import type { TransferWithState } from "~/renderer/schemas.js";
 
 import { Combobox } from "~/renderer/components/combobox.js";
-import { Highlight } from "~/renderer/components/highlight.js";
+import { Highlight, type HighlightRef } from "~/renderer/components/highlight.js";
 import { ImportDescription } from "~/renderer/components/import-description.js";
 import { SettingsCard } from "~/renderer/components/settings-card.js";
 import { TransferItem } from "~/renderer/components/transfer-item.js";
@@ -114,8 +114,7 @@ export function App() {
   }, [transfers, newTransfer]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const transferRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [highlightedTransferId, setHighlightedTransferId] = useState<string | null>(null);
+  const transferRefs = useRef<Map<string, HighlightRef>>(new Map());
 
   const handleAddTransfer = () => {
     const id = idGenerator();
@@ -236,7 +235,7 @@ export function App() {
   };
 
   const highlightTransfer = (id: string) => {
-    setHighlightedTransferId(id);
+    transferRefs.current.get(id)?.scrollIntoView({ highlightDuration: 1500 });
   };
 
   const appBarHeightStyle = useMemo(() => {
@@ -582,20 +581,17 @@ export function App() {
                     )
                   : (
                       transfers.map((transfer, index) => (
-                        <div
-                          key={transfer.id}
-                          ref={(element) => {
-                            if (element) {
-                              transferRefs.current.set(transfer.id, element);
-                            } else {
-                              transferRefs.current.delete(transfer.id);
-                            }
-                          }}
-                        >
+                        <div key={transfer.id}>
                           {index > 0 && <div className="h-px bg-border my-6" />}
                           <Highlight
-                            active={highlightedTransferId === transfer.id}
                             className="w-full data-[highlighted=true]:outline-offset-16"
+                            ref={(element) => {
+                              if (element) {
+                                transferRefs.current.set(transfer.id, element);
+                              } else {
+                                transferRefs.current.delete(transfer.id);
+                              }
+                            }}
                             scrollTo
                           >
                             <TransferItem

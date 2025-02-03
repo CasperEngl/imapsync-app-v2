@@ -4,51 +4,78 @@ import * as React from "react";
 
 import { cn } from "~/renderer/lib/utils.js";
 
+export interface HighlightRef {
+  scrollIntoView: (
+    args?: ScrollIntoViewOptions & {
+      /**
+       * Duration in milliseconds before the highlight is removed.
+       * @default 2500
+       */
+      highlightDuration?: number;
+    },
+  ) => void;
+}
+
 interface HighlightProps {
   children: React.ReactNode;
   className?: string;
-  active: boolean;
   scrollTo?: boolean;
+  ref: React.Ref<HighlightRef>;
 }
 
 export function Highlight({
   children,
   className,
-  active,
   scrollTo = false,
+  ref,
 }: HighlightProps) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [isHighlighted, setIsHighlighted] = React.useState(active);
+  const [isHighlighted, setIsHighlighted] = React.useState(false);
+  const elementRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    if (!active) {
-      setIsHighlighted(false);
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      scrollIntoView: (args) => {
+        const { highlightDuration: delay, ...rest } = args ?? {};
 
-      return;
-    }
+        if (!elementRef.current) return;
 
-    setIsHighlighted(true);
+        elementRef.current.style.setProperty(
+          "--delay",
+          delay?.toString() ?? "2500",
+        );
 
-    // Scroll into view if scrollTo is true
-    if (scrollTo && ref.current) {
-      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+        setIsHighlighted(true);
 
-    const timer = setTimeout(() => {
-      setIsHighlighted(false);
-    }, 1500);
+        // Scroll into view if scrollTo is true
+        if (scrollTo) {
+          elementRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            ...rest,
+          });
+        }
 
-    return () => clearTimeout(timer);
-  }, [active, scrollTo]);
+        setTimeout(() => {
+          if (!elementRef.current) return;
+
+          elementRef.current.style.removeProperty("--delay");
+
+          setIsHighlighted(false);
+        }, delay ?? 2500);
+      },
+    }),
+    [scrollTo],
+  );
 
   return (
     <div
       className={cn(
-        "inline-block rounded-lg outline-4 outline-offset-[12px] transition-all delay-1000 duration-500 data-[highlighted=true]:outline-offset-8 data-[highlighted=false]:outline-transparent data-[highlighted=true]:outline-primary",
+        "inline-block rounded-lg outline-4 outline-offset-[12px] transition-all duration-500 data-[highlighted=true]:outline-offset-8 data-[highlighted=false]:outline-transparent data-[highlighted=true]:outline-primary delay-(--delay,_1500)",
         className,
       )}
       data-highlighted={isHighlighted}
-      ref={ref}
+      ref={elementRef}
     >
       {children}
     </div>
