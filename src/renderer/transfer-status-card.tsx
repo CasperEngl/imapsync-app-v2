@@ -82,51 +82,50 @@ export function TransferStatusCard({
           >
             Keep
           </Button>
-          {transfers.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="rounded-none w-full"
-                  variant="ghost"
-                >
-                  Details
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-[300px] overflow-y-auto p-0">
-                {transfers.map((transfer, index) => (
-                  <div key={transfer.id}>
-                    {index > 0 && <div className="h-px bg-border" />}
-                    <DropdownMenuItem
-                      className="p-4 flex-col items-start rounded-none"
-                      onClick={() => {
-                        onTransferClick(transfer.id);
-                      }}
-                    >
-                      <div className="text-xs text-muted-foreground">
-                        ID:
-                        {" "}
-                        {transfer.id}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{transfer.source.user}</span>
-                        <ArrowLeftRight className="size-4" />
-                        <span className="font-medium">{transfer.destination.user}</span>
-                      </div>
-                      {transfer.error
-                        ? (
-                            <p className="font-medium text-red-500 text-xs text-pretty">
-                              Error:
-                              {" "}
-                              {transfer.error}
-                            </p>
-                          )
-                        : null}
-                    </DropdownMenuItem>
-                  </div>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="rounded-none w-full"
+                disabled={transfers.length === 0}
+                variant="ghost"
+              >
+                View Transfers
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="max-h-[300px] overflow-y-auto p-0">
+              {transfers.map((transfer, index) => (
+                <div key={transfer.id}>
+                  {index > 0 && <div className="h-px bg-border" />}
+                  <DropdownMenuItem
+                    className="p-4 flex-col items-start rounded-none"
+                    onClick={() => {
+                      onTransferClick(transfer.id);
+                    }}
+                  >
+                    <div className="text-xs text-muted-foreground">
+                      ID:
+                      {" "}
+                      {transfer.id}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{transfer.source.user}</span>
+                      <ArrowLeftRight className="size-4" />
+                      <span className="font-medium">{transfer.destination.user}</span>
+                    </div>
+                    {transfer.error
+                      ? (
+                          <p className="font-medium text-red-500 text-xs text-pretty">
+                            Error:
+                            {" "}
+                            {transfer.error}
+                          </p>
+                        )
+                      : null}
+                  </DropdownMenuItem>
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardFooter>
       </Card>
     </div>
