@@ -280,6 +280,20 @@ export const store = createStoreWithProducer(produce, {
     removeAll: (context) => {
       context.transfers = [];
     },
+    stopTransfer: (
+      context,
+      event: {
+        id: string;
+      },
+    ) => {
+      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      if (transfer) {
+        transfer.status = "idle";
+        if (transfer.progress) {
+          transfer.progress.message = "Transfer stopped by user. Sync is incomplete.";
+        }
+      }
+    },
   },
 });
 
@@ -321,5 +335,13 @@ window.api.onTransferOutput((event, data) => {
     type: "addTransferOutput",
     id: data.id,
     content: data.content,
+  });
+});
+
+// Add the stop transfer listener
+window.api.onTransferStop((event, data) => {
+  store.send({
+    type: "stopTransfer",
+    id: data.id,
   });
 });

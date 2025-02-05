@@ -48,4 +48,14 @@ contextBridge.exposeInMainWorld("api", {
   openExternalUrl: (url: string) =>
     ipcRenderer.invoke("open-external-url", url),
   removeTransfer: (transferId: string) => ipcRenderer.invoke("remove-transfer", transferId),
+  stopTransfer: (transferId) => {
+    return ipcRenderer.invoke("stop-transfer", transferId);
+  },
+  onTransferStop: (callback) => {
+    ipcRenderer.on("transfer-stop", callback);
+
+    return () => {
+      ipcRenderer.removeListener("transfer-stop", callback);
+    };
+  },
 } satisfies IpcApi);

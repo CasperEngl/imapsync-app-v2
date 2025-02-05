@@ -38,12 +38,16 @@ const statusConfig = {
     },
   },
   syncing: {
-    text: "Syncing",
+    text: "Stop",
     variant: "default",
-    icon: <Loader2 className="size-4 animate-spin" />,
+    icon: <X className="size-4" />,
     disabled: false,
     className: "",
-    onClick: () => {},
+    onClick: (transfer: TransferWithState) => {
+      if (transfer.status === "syncing") {
+        void window.api.stopTransfer(transfer.id);
+      }
+    },
   },
   completed: {
     text: "Restart",
@@ -264,12 +268,13 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
 
         <div className="flex gap-2">
           {transfer.status === "syncing" ? (
-            <Loader2 className="size-6 my-1 animate-spin" />
+            <Loader2 className="size-6 my-1 animate-spin text-muted-foreground" />
           ) : null}
 
           {/* Progress bar for syncing state */}
           <div className="w-full mt-0.5 mb-4">
             <Progress
+              active={transfer.status === "syncing"}
               value={
                 transfer.progress
                   ? (transfer.progress.current / transfer.progress.total) * 100

@@ -284,7 +284,7 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         }
 
         // Track completion
-        if (line.includes("Transfer ended on")) {
+        if (line.includes("Exiting with return value 0")) {
           win.webContents.send("transfer-progress", {
             id: transfer.id,
             current: totalProgress,
@@ -313,6 +313,8 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       runningProcesses.delete(transfer.id);
       if (code === 0) {
         resolve(true);
+      } else if (code === null) {
+        resolve(false);
       } else {
         reject(new Error(`imapsync process exited with code ${code}`));
       }
@@ -327,12 +329,15 @@ ipcMain.handle("start-transfer", async (event, transfer) => {
       throw new Error("No window found for transfer");
     }
 
-    await runImapsync(transfer, win);
+    const success = await runImapsync(transfer, win);
 
-    win.webContents.send("transfer-complete", {
-      id: transfer.id,
-    });
+    if (success) {
+      win.webContents.send("transfer-complete", {
+        id: transfer.id,
+      });
+    }
   } catch (error) {
+    console.log(error);
     event.sender.send("transfer-error", {
       id: transfer.id,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -391,11 +396,13 @@ ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState
           throw new Error("No window found for transfer");
         }
 
-        await runImapsync(transfer, win);
-
-        win.webContents.send("transfer-complete", {
-          id: transfer.id,
-        });
+        const success =await runImapsync(transfer, win);
+        
+        if (success) {
+          win.webContents.send("transfer-complete", {
+            id: transfer.id,
+          });
+        }
       } catch (error) {
         event.sender.send("transfer-error", {
           id: transfer.id,
@@ -561,4 +568,26 @@ ipcMain.handle("set-concurrent-transfers", (_, value: number) => {
   }
   store.set("concurrentTransfers", value);
   return value;
+});
+
+// Add this with the other ipcMain handlers
+ipcMain.handle("stop-transfer", async (event, transferId: string) => {
+  const process = runningProcesses.get(transferId);
+  if (process) {
+    try {
+      process.kill();
+      runningProcesses.delete(transferId);
+      
+      // Notify renderer that transfer was stopped with a dedicated event
+      const win = BrowserWindow.fromWebContents(event.sender);
+      if (win) {
+        win.webContents.send("transfer-stop", {
+          id: transferId,
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to stop transfer ${transferId}:`, error);
+      throw new Error(`Failed to stop transfer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 });
