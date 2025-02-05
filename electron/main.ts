@@ -78,7 +78,6 @@ async function createWindow() {
     height: 800,
     titleBarStyle: "hiddenInset",
     webPreferences: {
-      devTools: !app.isPackaged,
       nodeIntegration: true,
       contextIsolation: true,
       preload: path.join(__dirname, "../preload/preload.mjs"),
@@ -190,8 +189,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       win.webContents.send("transfer-output", {
         id: transfer.id,
         content: output,
-        isError: false,
-        timestamp: Date.now(),
       });
 
       while (true) {
@@ -304,8 +301,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       win.webContents.send("transfer-output", {
         id: transfer.id,
         content: data.toString(),
-        isError: true,
-        timestamp: Date.now(),
       });
     });
 
