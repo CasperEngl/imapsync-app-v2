@@ -1,7 +1,16 @@
 import type { VariantProps } from "class-variance-authority";
 
 import { useSelector } from "@xstate/store/react";
-import { ArrowLeftRight, CheckCircle2, ChevronDown, Copy, Loader2, Play, RotateCcw, X } from "lucide-react";
+import {
+  ArrowLeftRight,
+  CheckCircle2,
+  ChevronDown,
+  Copy,
+  Loader2,
+  Play,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { useDeferredValue, useRef } from "react";
 import { useScroll } from "react-use";
 
@@ -34,7 +43,7 @@ const statusConfig = {
     icon: <Loader2 className="size-4 animate-spin" />,
     disabled: false,
     className: "",
-    onClick: () => { },
+    onClick: () => {},
   },
   completed: {
     text: "Restart",
@@ -53,7 +62,8 @@ const statusConfig = {
     variant: "outline",
     icon: <RotateCcw className="size-4" />,
     disabled: false,
-    className: "border-destructive hover:bg-destructive/10 hover:text-destructive",
+    className:
+      "border-destructive hover:bg-destructive/10 hover:text-destructive",
     onClick: (transfer: TransferWithState) => {
       if (transfer.status === "error") {
         store.send({ type: "startTransfer", id: transfer.id });
@@ -77,19 +87,23 @@ interface TransferItemProps {
   hostOptions: Array<{ label: string; value: string }>;
 }
 
-export function TransferItem({
-  transfer,
-  hostOptions,
-}: TransferItemProps) {
+export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
   const outputRef = useRef<HTMLPreElement>(null);
   const outputs = useDeferredValue(transfer.outputs);
-  const showTransferIds = useSelector(store, snapshot => snapshot.context.settings.showTransferIds);
+  const showTransferIds = useSelector(
+    store,
+    (snapshot) => snapshot.context.settings.showTransferIds,
+  );
   const { y: scrollY } = useScroll(outputRef as React.RefObject<HTMLElement>);
 
   const config = statusConfig[transfer.status];
 
   const isScrolledToBottom = outputRef.current
-    ? Math.abs((outputRef.current.scrollHeight - outputRef.current.clientHeight) - scrollY) < 1
+    ? Math.abs(
+        outputRef.current.scrollHeight -
+          outputRef.current.clientHeight -
+          scrollY,
+      ) < 1
     : true;
 
   const scrollToBottom = () => {
@@ -106,7 +120,9 @@ export function TransferItem({
         {showTransferIds && (
           <div className="pb-2">
             <div className="text-xs text-muted-foreground">ID</div>
-            <div className="text-lg font-mono text-accent-foreground">{transfer.id}</div>
+            <div className="text-lg font-mono text-accent-foreground">
+              {transfer.id}
+            </div>
           </div>
         )}
         <div className="@container/transfer mb-4">
@@ -117,13 +133,14 @@ export function TransferItem({
                 <label className="block text-sm text-gray-500">Host</label>
                 <Combobox
                   className="w-full"
-                  onValueChange={value =>
+                  onValueChange={(value) =>
                     store.send({
                       type: "updateTransferSource",
                       id: transfer.id,
                       field: "host",
                       value,
-                    })}
+                    })
+                  }
                   options={hostOptions}
                   placeholder="Select or enter host..."
                   searchPlaceholder="Search hosts..."
@@ -174,13 +191,14 @@ export function TransferItem({
                 <label className="block text-sm text-gray-500">Host</label>
                 <Combobox
                   className="w-full"
-                  onValueChange={value =>
+                  onValueChange={(value) =>
                     store.send({
                       type: "updateTransferDestination",
                       id: transfer.id,
                       field: "host",
                       value,
-                    })}
+                    })
+                  }
                   options={hostOptions}
                   placeholder="Select or enter host..."
                   searchPlaceholder="Search hosts..."
@@ -223,7 +241,9 @@ export function TransferItem({
 
         <div className="flex gap-2 mb-4">
           <Button
-            onClick={() => store.send({ type: "duplicateTransfer", id: transfer.id })}
+            onClick={() =>
+              store.send({ type: "duplicateTransfer", id: transfer.id })
+            }
             title="Duplicate transfer"
             variant="outline"
           >
@@ -231,7 +251,9 @@ export function TransferItem({
             Duplicate
           </Button>
           <Button
-            onClick={() => store.send({ type: "swapSourceAndDestination", id: transfer.id })}
+            onClick={() =>
+              store.send({ type: "swapSourceAndDestination", id: transfer.id })
+            }
             title="Swap source and destination"
             variant="outline"
           >
@@ -241,11 +263,9 @@ export function TransferItem({
         </div>
 
         <div className="flex gap-2">
-          {transfer.status === "syncing"
-            ? (
-                <Loader2 className="size-6 my-1 animate-spin" />
-              )
-            : null}
+          {transfer.status === "syncing" ? (
+            <Loader2 className="size-6 my-1 animate-spin" />
+          ) : null}
 
           {/* Progress bar for syncing state */}
           <div className="w-full mt-0.5 mb-4">
@@ -257,15 +277,13 @@ export function TransferItem({
               }
             />
             <p className="text-sm mt-1">
-              {transfer.error
-                ? (
-                    <span className="text-red-500">
-                      Error:
-                      {" "}
-                      {transfer.error}
-                    </span>
-                  )
-                : <span className="text-muted-foreground">{transfer.progress?.message || "No progress to show"}</span>}
+              {transfer.error ? (
+                <span className="text-red-500">Error: {transfer.error}</span>
+              ) : (
+                <span className="text-muted-foreground">
+                  {transfer.progress?.message || "No progress to show"}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -305,32 +323,17 @@ export function TransferItem({
             View Output
           </summary>
           <pre
-            className="mt-2 p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[400px] overflow-auto snap-proximity snap-y content-end flex flex-col after:block after:snap-end"
+            className="mt-2 p-4 bg-muted rounded-lg text-sm text-muted-foreground whitespace-pre-wrap max-h-[400px] overflow-auto snap-proximity snap-y content-end flex flex-col after:block after:snap-end"
             ref={outputRef}
           >
-            {outputs.length > 0
-              ? (
-                  outputs.map(output => (
-                    <div
-                      className={cn(
-                        output.isError
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                      key={output.timestamp}
-                    >
-                      {output.content}
-                    </div>
-                  ))
-                )
-              : (
-                  "No output available"
-                )}
+            {outputs.length > 0 ? outputs : "No output available"}
           </pre>
           <Button
             className={cn(
               "absolute bottom-2 right-2 size-8 p-0 opacity-0 transition transition-discrete",
-              !isScrolledToBottom && outputs.length > 0 ? "flex starting:opacity-0 opacity-100" : "opacity-0",
+              !isScrolledToBottom && outputs.length > 0
+                ? "flex starting:opacity-0 opacity-100"
+                : "opacity-0",
             )}
             onClick={scrollToBottom}
             title="Scroll to bottom"

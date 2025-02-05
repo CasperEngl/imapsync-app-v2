@@ -18,12 +18,6 @@ export const TransferProgress = v.object({
   progress: v.number(),
 });
 
-export const TransferOutput = v.object({
-  content: v.string(),
-  isError: v.boolean(),
-  timestamp: v.number(),
-});
-
 export const TransferStatus = v.picklist([
   "idle",
   "syncing",
@@ -39,7 +33,7 @@ export const TransferState = v.object({
   error: v.nullable(v.string()),
   progress: v.optional(TransferProgress),
   createdAt: v.number(),
-  outputs: v.array(TransferOutput),
+  outputs: v.string(),
 });
 
 export type TransferState = v.InferOutput<typeof TransferState>;

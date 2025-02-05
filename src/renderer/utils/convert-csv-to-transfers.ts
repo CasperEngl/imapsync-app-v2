@@ -76,7 +76,7 @@ export function convertCsvToTransfers(csvText: string): TransferWithState[] {
       status: state?.status || "idle",
       error: state?.error || null,
       createdAt: state?.createdAt || Date.now(),
-      outputs: state?.outputs || [],
+      outputs: state?.outputs || "",
       source: {
         host: sourceHost || "",
         user: sourceUser || "",

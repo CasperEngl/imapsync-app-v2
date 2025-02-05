@@ -74,7 +74,7 @@ export const store = createStoreWithProducer(produce, {
         destination: event.destination,
         status: event.status || ("idle" as const),
         createdAt: event.createdAt || Date.now(),
-        outputs: event.outputs || [],
+        outputs: event.outputs || "",
         error: event.error || null,
         progress: event.progress,
       });
@@ -90,7 +90,7 @@ export const store = createStoreWithProducer(produce, {
         if (transfer.status === "idle") {
           transfer.status = "syncing";
           transfer.error = null;
-          transfer.outputs = [];
+          transfer.outputs = "";
           transfer.progress = {
             current: 0,
             total: 100,
@@ -158,7 +158,7 @@ export const store = createStoreWithProducer(produce, {
 
       transfer.status = "syncing";
       transfer.error = null;
-      transfer.outputs = [];
+      transfer.outputs = "";
       transfer.progress = {
         current: 0,
         total: 100,
@@ -215,19 +215,11 @@ export const store = createStoreWithProducer(produce, {
       event: {
         id: string;
         content: string;
-        isError: boolean;
-        timestamp: number;
       },
     ) => {
       const transfer = context.transfers.find(transfer => transfer.id === event.id);
       if (transfer) {
-        startTransition(() => {
-          transfer.outputs.push({
-            content: event.content,
-            isError: event.isError,
-            timestamp: Date.now(),
-          });
-        });
+        transfer.outputs += event.content;
       }
     },
     duplicateTransfer: (
@@ -245,7 +237,7 @@ export const store = createStoreWithProducer(produce, {
         id: idGenerator(),
         status: "idle" as const,
         createdAt: Date.now(),
-        outputs: [],
+        outputs: "",
         error: null,
         progress: undefined,
       });
@@ -329,7 +321,5 @@ window.api.onTransferOutput((event, data) => {
     type: "addTransferOutput",
     id: data.id,
     content: data.content,
-    isError: data.isError,
-    timestamp: data.timestamp,
   });
 });
