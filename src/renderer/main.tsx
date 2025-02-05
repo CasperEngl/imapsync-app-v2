@@ -10,6 +10,13 @@ import { App } from "~/renderer/app.js";
 Sentry.init({
   dsn: "https://2ef398fb3103913aa8b919833e378ef6@o4508755915571200.ingest.de.sentry.io/4508755917013072",
   integrations: [Sentry.captureConsoleIntegration()],
+  enabled: import.meta.env.PROD,
+  ignoreErrors: [
+    // Ignore Vite-specific messages
+    /\[vite\]/,
+    /\[hmr\]/,
+    /\[webpack-dev-server\]/,
+  ],
 });
 
 const rootElement = document.getElementById("root");
