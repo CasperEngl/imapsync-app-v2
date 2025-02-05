@@ -5,6 +5,8 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 
+const ReactCompilerConfig = {};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   main: {
@@ -37,7 +39,11 @@ export default defineConfig({
 
   renderer: {
     plugins: [
-      react(),
+      react({
+        babel: {
+          plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+        },
+      }),
       tailwindcss(),
       sentryVitePlugin({
         org: "casper-engelmann",

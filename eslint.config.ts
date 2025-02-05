@@ -1,8 +1,11 @@
 import antfu from "@antfu/eslint-config";
+// @ts-expect-error - react-compiler is not typed
+import reactCompiler from "eslint-plugin-react-compiler"
 
 export default antfu({
   plugins: [
     "prettier",
+    reactCompiler,
   ],
   ignores: ["electron/**/*"],
   stylistic: {
@@ -82,6 +85,7 @@ export default antfu({
   },
   rules: {
     "antfu/if-newline": "off",
+    "react-compiler/react-compiler": "error",
   },
 })
   .overrides({
