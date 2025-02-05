@@ -50,14 +50,6 @@ export function App() {
   const exportWithStateId = useId();
   const showTransferIdsId = useId();
   const replaceAllId = useId();
-  const exportWithState = useSelector(
-    store,
-    snapshot => snapshot.context.settings.exportWithState,
-  );
-  const showTransferIds = useSelector(
-    store,
-    snapshot => snapshot.context.settings.showTransferIds,
-  );
   const transfers = useSelector(
     store,
     snapshot => snapshot.context.transfers,
@@ -223,7 +215,7 @@ export function App() {
     try {
       const { success } = await window.api.exportTransfers(transfers, {
         exportAs: options.exportAs,
-        withState: exportWithState,
+        withState: settings.exportWithState,
       });
 
       if (success) {
@@ -551,7 +543,7 @@ export function App() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 mt-2 break-all">
                     <Checkbox
-                      checked={exportWithState}
+                      checked={settings.exportWithState}
                       id={exportWithStateId}
                       onCheckedChange={() => {
                         store.send({ type: "toggleExportWithState" });
@@ -563,7 +555,7 @@ export function App() {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <Checkbox
-                      checked={showTransferIds}
+                      checked={settings.showTransferIds}
                       id={showTransferIdsId}
                       onCheckedChange={handleToggleTransferIds}
                     />
