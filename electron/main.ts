@@ -7,7 +7,7 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 
 import type {
-  TransferState,  
+  TransferState,
   TransferWithState,
 } from "../src/renderer/schemas.js";
 
@@ -215,7 +215,9 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         }
 
         // Track total folders
-        const folderCountMatch = line.match(/Host1 Nb folders:\s+(\d+) folders/);
+        const folderCountMatch = line.match(
+          /Host1 Nb folders:\s+(\d+) folders/,
+        );
         if (folderCountMatch) {
           const totalFolders = Number.parseInt(folderCountMatch[1], 10);
           win.webContents.send("transfer-progress", {
@@ -228,7 +230,9 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         }
 
         // Track total messages
-        const messageCountMatch = line.match(/Host1 Nb messages:\s+(\d+) messages/);
+        const messageCountMatch = line.match(
+          /Host1 Nb messages:\s+(\d+) messages/,
+        );
         if (messageCountMatch) {
           const totalMessages = Number.parseInt(messageCountMatch[1], 10);
           totalProgress = totalMessages; // Update the existing totalProgress variable
@@ -297,15 +301,58 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     });
 
     imapsync.stderr.on("data", (data) => {
-      // Send stderr output to frontend as well
+      const errorOutput = data.toString();
+
+      // Check for OOM error patterns
+      const isOOMError =
+        errorOutput.includes("Out of Memory") ||
+        errorOutput.includes("0x7ffa1df0b699") ||
+        errorOutput.includes("allocation failed");
+
+      if (isOOMError) {
+        // Send a specific OOM error event
+        win.webContents.send("transfer-error", {
+          id: transfer.id,
+          error:
+            "Out of Memory: The transfer process ran out of available memory. Try reducing concurrent transfers or splitting the transfer into smaller batches.",
+          isOOM: true,
+        });
+
+        // Kill the process
+        try {
+          imapsync.kill();
+          runningProcesses.delete(transfer.id);
+        } catch (error) {
+          console.error(`Failed to kill OOM process ${transfer.id}:`, error);
+        }
+
+        resolve(false);
+        return;
+      }
+
+      // Send stderr output to frontend as usual
       win.webContents.send("transfer-output", {
         id: transfer.id,
-        content: data.toString(),
+        content: errorOutput,
       });
     });
 
     imapsync.on("error", (error) => {
-      reject(new Error(`Failed to start imapsync: ${error.message}`));
+      // Check if the error is memory-related
+      if (
+        error.message.includes("Out of Memory") ||
+        error.message.includes("allocation failed")
+      ) {
+        win.webContents.send("transfer-error", {
+          id: transfer.id,
+          error:
+            "Out of Memory: The transfer process ran out of available memory. Try reducing concurrent transfers or splitting the transfer into smaller batches.",
+          isOOM: true,
+        });
+        resolve(false);
+      } else {
+        reject(new Error(`Failed to start imapsync: ${error.message}`));
+      }
     });
 
     imapsync.on("close", (code) => {
@@ -338,9 +385,20 @@ ipcMain.handle("start-transfer", async (event, transfer) => {
     }
   } catch (error) {
     console.log(error);
+    // Check if this is an OOM error
+    const isOOM =
+      error instanceof Error &&
+      (error.message.includes("Out of Memory") ||
+        error.message.includes("allocation failed"));
+
     event.sender.send("transfer-error", {
       id: transfer.id,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: isOOM
+        ? "Out of Memory: The transfer process ran out of available memory. Try reducing concurrent transfers or splitting the transfer into smaller batches."
+        : error instanceof Error
+          ? error.message
+          : "Unknown error",
+      isOOM,
     });
   }
 });
@@ -383,21 +441,20 @@ async function asyncPool<T, U>(
   });
 }
 
-ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState[]) => {
-  const CONCURRENT_TRANSFERS = store.get("concurrentTransfers", 3);
+ipcMain.handle(
+  "start-all-transfers",
+  async (event, transfers: TransferWithState[]) => {
+    const CONCURRENT_TRANSFERS = store.get("concurrentTransfers", 3);
 
-  await asyncPool(
-    CONCURRENT_TRANSFERS,
-    transfers,
-    async (transfer) => {
+    await asyncPool(CONCURRENT_TRANSFERS, transfers, async (transfer) => {
       try {
         const win = BrowserWindow.fromWebContents(event.sender);
         if (!win) {
           throw new Error("No window found for transfer");
         }
 
-        const success =await runImapsync(transfer, win);
-        
+        const success = await runImapsync(transfer, win);
+
         if (success) {
           win.webContents.send("transfer-complete", {
             id: transfer.id,
@@ -409,9 +466,9 @@ ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
-    },
-  );
-});
+    });
+  },
+);
 
 ipcMain.handle("select-imapsync-binary", async () => {
   const result = await dialog.showOpenDialog({
@@ -496,7 +553,7 @@ ipcMain.handle(
           "Destination Password",
           ...(withState ? ["State"] : []),
         ];
-        const rows = transfers.map(transfer => [
+        const rows = transfers.map((transfer) => [
           transfer.source.host,
           transfer.source.user,
           transfer.source.password,
@@ -519,8 +576,10 @@ ipcMain.handle(
 
         const csvContent = [
           headers.join(","),
-          ...rows.map(row =>
-            row.map(cell => `"${String(cell).replace(/"/g, "\"\"")}"`).join(","),
+          ...rows.map((row) =>
+            row
+              .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+              .join(","),
           ),
         ].join("\n");
 
@@ -551,7 +610,10 @@ ipcMain.handle("remove-transfer", async (_, transferId: string) => {
     try {
       process.kill();
     } catch (error) {
-      console.error(`Failed to kill process for transfer ${transferId}:`, error);
+      console.error(
+        `Failed to kill process for transfer ${transferId}:`,
+        error,
+      );
     }
   }
   runningProcesses.delete(transferId);
@@ -577,7 +639,7 @@ ipcMain.handle("stop-transfer", async (event, transferId: string) => {
     try {
       process.kill();
       runningProcesses.delete(transferId);
-      
+
       // Notify renderer that transfer was stopped with a dedicated event
       const win = BrowserWindow.fromWebContents(event.sender);
       if (win) {
@@ -587,7 +649,9 @@ ipcMain.handle("stop-transfer", async (event, transferId: string) => {
       }
     } catch (error) {
       console.error(`Failed to stop transfer ${transferId}:`, error);
-      throw new Error(`Failed to stop transfer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to stop transfer: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 });
