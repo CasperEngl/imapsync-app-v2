@@ -14,8 +14,7 @@ the Software for personal, non-commercial purposes only, subject to the followin
 
 1. The Software may not be distributed, sublicensed, shared, or made available to others in any form.
 2. You may not modify, merge, publish, or create derivative works of the Software.
-3. The above copyright notice and this permission notice shall be included in all
-copies of the Software.
+3. The above copyright notice and this permission notice shall be included in all copies of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
