@@ -3,11 +3,18 @@ import * as React from "react";
 
 import { cn } from "~/renderer/lib/utils.js";
 
-interface ProgressProps extends React.ComponentProps<typeof ProgressPrimitive.Root> {
+interface ProgressProps
+  extends React.ComponentProps<typeof ProgressPrimitive.Root> {
   active?: boolean;
 }
 
-export function Progress({ ref, className, value, active, ...props }: ProgressProps) {
+export function Progress({
+  ref,
+  className,
+  value,
+  active,
+  ...props
+}: ProgressProps) {
   return (
     <ProgressPrimitive.Root
       className={cn(

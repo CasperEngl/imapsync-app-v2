@@ -7,7 +7,11 @@ import * as React from "react";
 import { Dialog, DialogContent } from "~/renderer/components/ui/dialog.js";
 import { cn } from "~/renderer/lib/utils.js";
 
-export function Command({ ref, className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
+export function Command({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
       className={cn(
@@ -32,7 +36,11 @@ export function CommandDialog({ children, ...props }: DialogProps) {
   );
 }
 
-export function CommandInput({ ref, className, ...props }: React.ComponentProps<typeof CommandPrimitive.Input>) {
+export function CommandInput({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
       <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -48,17 +56,27 @@ export function CommandInput({ ref, className, ...props }: React.ComponentProps<
   );
 }
 
-export function CommandList({ ref, className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
+export function CommandList({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
-      className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+      className={cn(
+        "max-h-[300px] overflow-y-auto overflow-x-hidden",
+        className,
+      )}
       ref={ref}
       {...props}
     />
   );
 }
 
-export function CommandEmpty({ ref, ...props }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
+export function CommandEmpty({
+  ref,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
       className="py-6 text-center text-sm"
@@ -68,7 +86,11 @@ export function CommandEmpty({ ref, ...props }: React.ComponentProps<typeof Comm
   );
 }
 
-export function CommandGroup({ ref, className, ...props }: React.ComponentProps<typeof CommandPrimitive.Group>) {
+export function CommandGroup({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Group>) {
   return (
     <CommandPrimitive.Group
       className={cn(
@@ -81,7 +103,11 @@ export function CommandGroup({ ref, className, ...props }: React.ComponentProps<
   );
 }
 
-export function CommandSeparator({ ref, className, ...props }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
+export function CommandSeparator({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
     <CommandPrimitive.Separator
       className={cn("-mx-1 h-px bg-border", className)}
@@ -91,7 +117,11 @@ export function CommandSeparator({ ref, className, ...props }: React.ComponentPr
   );
 }
 
-export function CommandItem({ ref, className, ...props }: React.ComponentProps<typeof CommandPrimitive.Item>) {
+export function CommandItem({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Item>) {
   return (
     <CommandPrimitive.Item
       className={cn(

@@ -7,10 +7,19 @@ import { cn } from "~/renderer/lib/utils.js";
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof badgeVariants> { }
+  VariantProps<typeof badgeVariants> {}
 
-export function Badge({ className, variant, size, interactive, ...props }: BadgeProps) {
+export function Badge({
+  className,
+  variant,
+  size,
+  interactive,
+  ...props
+}: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant, size, interactive }), className)} {...props} />
+    <div
+      className={cn(badgeVariants({ variant, size, interactive }), className)}
+      {...props}
+    />
   );
 }

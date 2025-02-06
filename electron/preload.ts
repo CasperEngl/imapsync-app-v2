@@ -42,12 +42,14 @@ contextBridge.exposeInMainWorld("api", {
   selectLogDirectory: () => ipcRenderer.invoke("select-log-directory"),
   getLogDirectory: () => ipcRenderer.invoke("get-log-directory"),
   getConcurrentTransfers: () => ipcRenderer.invoke("get-concurrent-transfers"),
-  setConcurrentTransfers: (value: number) => ipcRenderer.invoke("set-concurrent-transfers", value),
+  setConcurrentTransfers: (value: number) =>
+    ipcRenderer.invoke("set-concurrent-transfers", value),
   exportTransfers: (transfers, options) =>
     ipcRenderer.invoke("export-transfers", transfers, options),
   openExternalUrl: (url: string) =>
     ipcRenderer.invoke("open-external-url", url),
-  removeTransfer: (transferId: string) => ipcRenderer.invoke("remove-transfer", transferId),
+  removeTransfer: (transferId: string) =>
+    ipcRenderer.invoke("remove-transfer", transferId),
   stopTransfer: (transferId) => {
     return ipcRenderer.invoke("stop-transfer", transferId);
   },

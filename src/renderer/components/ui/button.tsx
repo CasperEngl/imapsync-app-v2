@@ -12,7 +12,14 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-export function Button({ ref, className, variant, size, asChild = false, ...props }: ButtonProps) {
+export function Button({
+  ref,
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: ButtonProps) {
   const Comp = asChild ? Slot : "button";
 
   return (

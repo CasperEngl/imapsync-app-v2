@@ -216,7 +216,9 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         }
 
         // Track total folders
-        const folderCountMatch = line.match(/Host1 Nb folders:\s+(\d+) folders/);
+        const folderCountMatch = line.match(
+          /Host1 Nb folders:\s+(\d+) folders/,
+        );
         if (folderCountMatch) {
           const totalFolders = Number.parseInt(folderCountMatch[1], 10);
           win.webContents.send("transfer-progress", {
@@ -229,7 +231,9 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         }
 
         // Track total messages
-        const messageCountMatch = line.match(/Host1 Nb messages:\s+(\d+) messages/);
+        const messageCountMatch = line.match(
+          /Host1 Nb messages:\s+(\d+) messages/,
+        );
         if (messageCountMatch) {
           const totalMessages = Number.parseInt(messageCountMatch[1], 10);
           totalProgress = totalMessages; // Update the existing totalProgress variable
@@ -383,13 +387,12 @@ async function asyncPool<T, U>(
   });
 }
 
-ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState[]) => {
-  const CONCURRENT_TRANSFERS = store.get("concurrentTransfers", 3);
+ipcMain.handle(
+  "start-all-transfers",
+  async (event, transfers: TransferWithState[]) => {
+    const CONCURRENT_TRANSFERS = store.get("concurrentTransfers", 3);
 
-  await asyncPool(
-    CONCURRENT_TRANSFERS,
-    transfers,
-    async (transfer) => {
+    await asyncPool(CONCURRENT_TRANSFERS, transfers, async (transfer) => {
       try {
         const win = BrowserWindow.fromWebContents(event.sender);
         if (!win) {
@@ -409,9 +412,9 @@ ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState
           error: error instanceof Error ? error.message : "Unknown error",
         });
       }
-    },
-  );
-});
+    });
+  },
+);
 
 ipcMain.handle("select-imapsync-binary", async () => {
   const result = await dialog.showOpenDialog({
@@ -520,7 +523,9 @@ ipcMain.handle(
         const csvContent = [
           headers.join(","),
           ...rows.map(row =>
-            row.map(cell => `"${String(cell).replace(/"/g, "\"\"")}"`).join(","),
+            row
+              .map(cell => `"${String(cell).replace(/"/g, "\"\"")}"`)
+              .join(","),
           ),
         ].join("\n");
 
@@ -551,7 +556,10 @@ ipcMain.handle("remove-transfer", async (_, transferId: string) => {
     try {
       process.kill();
     } catch (error) {
-      console.error(`Failed to kill process for transfer ${transferId}:`, error);
+      console.error(
+        `Failed to kill process for transfer ${transferId}:`,
+        error,
+      );
     }
   }
   runningProcesses.delete(transferId);
@@ -588,7 +596,9 @@ ipcMain.handle("stop-transfer", async (event, transferId: string) => {
       }
     } catch (error) {
       console.error(`Failed to stop transfer ${transferId}:`, error);
-      throw new Error(`Failed to stop transfer: ${error instanceof Error ? error.message : "Unknown error"}`);
+      throw new Error(
+        `Failed to stop transfer: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 });

@@ -45,10 +45,11 @@ function persistState(state: StoreContext) {
 const persistedState = loadPersistedState();
 
 const storeContext: StoreContext = {
-  transfers: persistedState.transfers?.map(transfer => ({
-    ...transfer,
-    status: transfer.status === "syncing" ? "idle" : transfer.status,
-  })) ?? [],
+  transfers:
+    persistedState.transfers?.map(transfer => ({
+      ...transfer,
+      status: transfer.status === "syncing" ? "idle" : transfer.status,
+    })) ?? [],
   settings: persistedState.settings ?? {
     showTransferIds: true,
     replaceAllOnImport: false,
@@ -105,7 +106,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
       },
     ) => {
-      const index = context.transfers.findIndex(transfer => transfer.id === event.id);
+      const index = context.transfers.findIndex(
+        transfer => transfer.id === event.id,
+      );
       if (index !== -1) {
         context.transfers.splice(index, 1);
       }
@@ -120,7 +123,9 @@ export const store = createStoreWithProducer(produce, {
         value: unknown;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
 
       if (transfer && event.field in transfer.source) {
         transfer.source[event.field] = event.value as never;
@@ -134,7 +139,9 @@ export const store = createStoreWithProducer(produce, {
         value: unknown;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
 
       if (transfer && event.field in transfer.destination) {
         transfer.destination[event.field] = event.value as never;
@@ -146,7 +153,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (!transfer) {
         console.warn("[Store] Transfer not found:", event.id);
 
@@ -171,7 +180,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (transfer) {
         transfer.status = "completed";
       }
@@ -183,7 +194,9 @@ export const store = createStoreWithProducer(produce, {
         error: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (transfer) {
         transfer.status = "error";
         transfer.error = event.error;
@@ -199,7 +212,9 @@ export const store = createStoreWithProducer(produce, {
         progress: number;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (transfer) {
         transfer.progress = {
           current: event.current,
@@ -216,7 +231,9 @@ export const store = createStoreWithProducer(produce, {
         content: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (transfer) {
         transfer.outputs += event.content;
       }
@@ -227,7 +244,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (!transfer) return;
 
       context.transfers.push({
@@ -247,7 +266,9 @@ export const store = createStoreWithProducer(produce, {
         id: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (!transfer) return;
 
       const source = current(transfer.source);
@@ -285,11 +306,14 @@ export const store = createStoreWithProducer(produce, {
         id: string;
       },
     ) => {
-      const transfer = context.transfers.find(transfer => transfer.id === event.id);
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
       if (transfer) {
         transfer.status = "idle";
         if (transfer.progress) {
-          transfer.progress.message = "Transfer stopped by user. Sync is incomplete.";
+          transfer.progress.message
+            = "Transfer stopped by user. Sync is incomplete.";
         }
       }
     },

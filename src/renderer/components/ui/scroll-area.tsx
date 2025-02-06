@@ -3,7 +3,12 @@ import * as React from "react";
 
 import { cn } from "~/renderer/lib/utils.js";
 
-export function ScrollArea({ ref, className, children, ...props }: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+export function ScrollArea({
+  ref,
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
   return (
     <ScrollAreaPrimitive.Root
       className={cn("relative overflow-hidden", className)}
@@ -19,7 +24,12 @@ export function ScrollArea({ ref, className, children, ...props }: React.Compone
   );
 }
 
-export function ScrollBar({ ref, className, orientation = "vertical", ...props }: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
+export function ScrollBar({
+  ref,
+  className,
+  orientation = "vertical",
+  ...props
+}: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
   return (
     <ScrollAreaPrimitive.ScrollAreaScrollbar
       className={cn(

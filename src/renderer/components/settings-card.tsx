@@ -4,7 +4,12 @@ import { useId } from "react";
 import { toast } from "sonner";
 
 import { Button } from "~/renderer/components/ui/button.js";
-import { Card, CardContent, CardHeader, CardTitle } from "~/renderer/components/ui/card.js";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "~/renderer/components/ui/card.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Label } from "~/renderer/components/ui/label.js";
 import { Skeleton } from "~/renderer/components/ui/skeleton.js";
@@ -49,7 +54,9 @@ export function SettingsCard() {
       await window.api.selectImapsyncBinary();
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : "Failed to upload binary");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to upload binary",
+      );
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ["imapsyncPath"] });
@@ -62,7 +69,11 @@ export function SettingsCard() {
       await window.api.setConcurrentTransfers(value);
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof Error ? error.message : "Failed to update concurrent transfers");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update concurrent transfers",
+      );
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["concurrentTransfers"] });
@@ -77,7 +88,9 @@ export function SettingsCard() {
     selectBinaryMutation.mutate();
   };
 
-  const handleConcurrentTransfersChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleConcurrentTransfersChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const value = Number.parseInt(event.target.value, 10);
     if (!Number.isNaN(value)) {
       updateConcurrentTransfersMutation.mutate(value);
@@ -149,11 +162,13 @@ export function SettingsCard() {
         <div>
           <Label htmlFor={concurrentTransfersId}>Concurrent Transfers</Label>
           <p className="text-[0.8rem] text-muted-foreground">
-            You can enter any number of concurrent transfers. The minimum is 1, and the recommended is 3, but it depends on your system.
+            You can enter any number of concurrent transfers. The minimum is 1,
+            and the recommended is 3, but it depends on your system.
           </p>
 
           <p className="text-[0.8rem] text-muted-foreground">
-            The number of concurrent transfers is limited by the number of available CPU cores.
+            The number of concurrent transfers is limited by the number of
+            available CPU cores.
           </p>
 
           <div className="mt-1 flex items-center space-x-2">

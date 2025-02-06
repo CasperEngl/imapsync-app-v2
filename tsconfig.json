@@ -8,5 +8,10 @@
     },
     "types": ["vite/client"]
   },
-  "include": ["src/**/*", "vitest.config.ts", "electron.vite.config.ts", "eslint.config.ts"]
+  "include": [
+    "src/**/*",
+    "vitest.config.ts",
+    "electron.vite.config.ts",
+    "eslint.config.ts"
+  ]
 }

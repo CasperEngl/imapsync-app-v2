@@ -4,7 +4,11 @@ import * as React from "react";
 
 import { cn } from "~/renderer/lib/utils.js";
 
-export function Checkbox({ ref, className, ...props }: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+export function Checkbox({
+  ref,
+  className,
+  ...props
+}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
   return (
     <CheckboxPrimitive.Root
       className={cn(

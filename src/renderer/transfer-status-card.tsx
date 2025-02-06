@@ -1,10 +1,27 @@
-import { ArrowLeftRight, CheckCircle, Clock, RefreshCw, XCircle } from "lucide-react";
+import {
+  ArrowLeftRight,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 
 import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 
 import { Button } from "~/renderer/components/ui/button.js";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "~/renderer/components/ui/card.js";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+} from "~/renderer/components/ui/card.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/renderer/components/ui/dropdown-menu.js";
 import { cn } from "~/renderer/lib/utils.js";
 import { store } from "~/renderer/store.js";
 
@@ -25,10 +42,13 @@ const keyMap = {
     text: "Error",
     icon: <XCircle className="size-4" />,
   },
-} satisfies Record<TransferStatus, {
-  text: string;
-  icon: React.ReactNode;
-}>;
+} satisfies Record<
+  TransferStatus,
+  {
+    text: string;
+    icon: React.ReactNode;
+  }
+>;
 
 export function TransferStatusCard({
   transfers,
@@ -45,7 +65,12 @@ export function TransferStatusCard({
 
   return (
     <div>
-      <Card className={cn("@container/transfer-status-card relative group flex flex-col items-center overflow-clip", className)}>
+      <Card
+        className={cn(
+          "@container/transfer-status-card relative group flex flex-col items-center overflow-clip",
+          className,
+        )}
+      >
         <CardHeader className="px-4 pt-4 pb-1">
           <div className="text-2xl font-black">{transfers.length}</div>
         </CardHeader>
@@ -53,7 +78,9 @@ export function TransferStatusCard({
           <CardDescription>
             <div className="flex items-center gap-2">
               <div className="text-muted-foreground">{key.icon}</div>
-              <span className="text-accent-foreground font-medium">{key.text}</span>
+              <span className="text-accent-foreground font-medium">
+                {key.text}
+              </span>
             </div>
           </CardDescription>
         </CardContent>
@@ -108,9 +135,13 @@ export function TransferStatusCard({
                       {transfer.id}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{transfer.source.user}</span>
+                      <span className="font-medium">
+                        {transfer.source.user}
+                      </span>
                       <ArrowLeftRight className="size-4" />
-                      <span className="font-medium">{transfer.destination.user}</span>
+                      <span className="font-medium">
+                        {transfer.destination.user}
+                      </span>
                     </div>
                     {transfer.error
                       ? (

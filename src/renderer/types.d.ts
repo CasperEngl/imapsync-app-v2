@@ -21,19 +21,22 @@ export interface IpcApi {
   startTransfer: (transfer: TransferWithState) => void;
   stopTransfer: (transferId: string) => Promise<void>;
   onTransferProgress: (
-    callback: (event: unknown, data: TransferData) => void
+    callback: (event: unknown, data: TransferData) => void,
   ) => void;
   onTransferComplete: (
-    callback: (event: unknown, data: Pick<TransferData, "id">) => void
+    callback: (event: unknown, data: Pick<TransferData, "id">) => void,
   ) => void;
   onTransferError: (
-    callback: (event: unknown, data: Pick<TransferData, "id" | "error">) => void
+    callback: (
+      event: unknown,
+      data: Pick<TransferData, "id" | "error">,
+    ) => void,
   ) => void;
   onTransferOutput: (
-    callback: (event: unknown, data: TransferOutputData) => void
+    callback: (event: unknown, data: TransferOutputData) => void,
   ) => void;
   onTransferStop: (
-    callback: (event: unknown, data: Pick<TransferData, "id">) => void
+    callback: (event: unknown, data: Pick<TransferData, "id">) => void,
   ) => void;
   selectImapsyncBinary: () => Promise<string>;
   getImapsyncPath: () => Promise<string>;
@@ -46,7 +49,7 @@ export interface IpcApi {
     options: {
       exportAs: "json" | "csv";
       withState: boolean;
-    }
+    },
   ) => Promise<{ success: boolean; error?: string }>;
   openExternalUrl: (url: string) => Promise<void>;
   removeTransfer: (transferId: string) => Promise<void>;

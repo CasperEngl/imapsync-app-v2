@@ -5,16 +5,12 @@ export const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground shadow",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground",
+        default: "border-transparent bg-primary text-primary-foreground shadow",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow",
-        success:
-          "border-transparent bg-green-500 text-white shadow",
-        info:
-          "border-transparent bg-blue-500 text-white shadow",
+        success: "border-transparent bg-green-500 text-white shadow",
+        info: "border-transparent bg-blue-500 text-white shadow",
         outline: "text-foreground",
         warning: "border-transparent bg-yellow-200 text-black shadow",
       },

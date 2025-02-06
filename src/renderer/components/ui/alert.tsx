@@ -19,7 +19,15 @@ const alertVariants = cva(
   },
 );
 
-export function Alert({ ref, className, variant, ...props }: React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function Alert({
+  ref,
+  className,
+  variant,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof alertVariants> & {
+    ref?: React.RefObject<HTMLDivElement | null>;
+  }) {
   return (
     <div
       className={cn(alertVariants({ variant }), className)}
@@ -30,7 +38,13 @@ export function Alert({ ref, className, variant, ...props }: React.HTMLAttribute
   );
 }
 
-export function AlertTitle({ ref, className, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { ref?: React.RefObject<HTMLParagraphElement | null> }) {
+export function AlertTitle({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement> & {
+  ref?: React.RefObject<HTMLParagraphElement | null>;
+}) {
   return (
     <h5
       className={cn("mb-1 font-medium leading-none tracking-tight", className)}
@@ -40,7 +54,13 @@ export function AlertTitle({ ref, className, ...props }: React.HTMLAttributes<HT
   );
 }
 
-export function AlertDescription({ ref, className, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.RefObject<HTMLParagraphElement | null> }) {
+export function AlertDescription({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement> & {
+  ref?: React.RefObject<HTMLParagraphElement | null>;
+}) {
   return (
     <div
       className={cn("text-sm [&_p]:leading-relaxed", className)}

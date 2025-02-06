@@ -9,7 +9,13 @@ export const PopoverTrigger = PopoverPrimitive.Trigger;
 
 export const PopoverAnchor = PopoverPrimitive.Anchor;
 
-export function PopoverContent({ ref, className, align = "center", sideOffset = 4, ...props }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+export function PopoverContent({
+  ref,
+  className,
+  align = "center",
+  sideOffset = 4,
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content

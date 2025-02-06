@@ -3,7 +3,14 @@ import * as React from "react";
 
 import { cn } from "~/renderer/lib/utils.js";
 
-export function Card({ ref, className, asChild = false, ...props }: React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean } & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function Card({
+  ref,
+  className,
+  asChild = false,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean } & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   const Comp = asChild ? Slot : "div";
 
   return (
@@ -15,7 +22,13 @@ export function Card({ ref, className, asChild = false, ...props }: React.HTMLAt
   );
 }
 
-export function CardHeader({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function CardHeader({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <div
       className={cn("flex flex-col space-y-1.5 p-6", className)}
@@ -25,7 +38,13 @@ export function CardHeader({ ref, className, ...props }: React.HTMLAttributes<HT
   );
 }
 
-export function CardTitle({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function CardTitle({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <div
       className={cn("font-semibold leading-none tracking-tight", className)}
@@ -35,7 +54,13 @@ export function CardTitle({ ref, className, ...props }: React.HTMLAttributes<HTM
   );
 }
 
-export function CardDescription({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function CardDescription({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <div
       className={cn("text-sm text-muted-foreground", className)}
@@ -45,11 +70,23 @@ export function CardDescription({ ref, className, ...props }: React.HTMLAttribut
   );
 }
 
-export function CardContent({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function CardContent({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   return <div className={cn("p-6 pt-0", className)} ref={ref} {...props} />;
 }
 
-export function CardFooter({ ref, className, ...props }: React.HTMLAttributes<HTMLDivElement> & { ref?: React.RefObject<HTMLDivElement | null> }) {
+export function CardFooter({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  ref?: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <div
       className={cn("flex items-center p-6 pt-0", className)}

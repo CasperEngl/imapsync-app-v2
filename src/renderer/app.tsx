@@ -13,7 +13,10 @@ import type { buttonVariants } from "~/renderer/components/ui/button.styles.js";
 import type { TransferWithState } from "~/renderer/schemas.js";
 
 import { Combobox } from "~/renderer/components/combobox.js";
-import { Highlight, type HighlightRef } from "~/renderer/components/highlight.js";
+import {
+  Highlight,
+  type HighlightRef,
+} from "~/renderer/components/highlight.js";
 import { ImportDescription } from "~/renderer/components/import-description.js";
 import { SettingsCard } from "~/renderer/components/settings-card.js";
 import { TransferItem } from "~/renderer/components/transfer-item.js";
@@ -27,7 +30,12 @@ import {
   CardTitle,
 } from "~/renderer/components/ui/card.js";
 import { Checkbox } from "~/renderer/components/ui/checkbox.js";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/renderer/components/ui/dropdown-menu.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/renderer/components/ui/dropdown-menu.js";
 import { Input } from "~/renderer/components/ui/input.js";
 import { Providers } from "~/renderer/providers.js";
 import { store } from "~/renderer/store.js";
@@ -211,7 +219,9 @@ export function App() {
     store.send({ type: "toggleShowTransferIds" });
   };
 
-  const handleExportTransfers = async (options: { exportAs: "json" | "csv" }) => {
+  const handleExportTransfers = async (options: {
+    exportAs: "json" | "csv";
+  }) => {
     try {
       const { success } = await window.api.exportTransfers(transfers, {
         exportAs: options.exportAs,
@@ -239,7 +249,11 @@ export function App() {
   return (
     <Providers>
       <div className="relative">
-        <div className="[app-region:drag] z-10 sticky top-0 h-10 select-all bg-accent" ref={appBarRef}></div>
+        <div
+          className="[app-region:drag] z-10 sticky top-0 h-10 select-all bg-accent"
+          ref={appBarRef}
+        >
+        </div>
         <header className="relative bg-white shadow py-4 text-pretty">
           <div className="container mx-auto">
             <h1 className="text-3xl font-bold">imapsync App</h1>
@@ -457,7 +471,10 @@ export function App() {
                         />
                         <Input
                           onChange={(event) => {
-                            handleDestinationChange("password", event.target.value);
+                            handleDestinationChange(
+                              "password",
+                              event.target.value,
+                            );
                           }}
                           placeholder="Password"
                           type="password"
@@ -602,8 +619,8 @@ export function App() {
         <footer className="container mx-auto py-8">
           <div className="max-w-prose">
             <p className="text-sm text-muted-foreground">
-              © 2025 Imapsync App. Available under Personal Use License for personal use.
-              Commercial use requires a separate license - contact
+              © 2025 Imapsync App. Available under Personal Use License for
+              personal use. Commercial use requires a separate license - contact
               {" "}
               <a
                 className="underline hover:text-foreground transition-colors"
@@ -614,8 +631,9 @@ export function App() {
             </p>
 
             <p className="text-sm text-red-500 mt-1">
-              Note: Using this software in a business environment or for commercial purposes
-              without a valid commercial license is strictly prohibited.
+              Note: Using this software in a business environment or for
+              commercial purposes without a valid commercial license is strictly
+              prohibited.
             </p>
           </div>
         </footer>
