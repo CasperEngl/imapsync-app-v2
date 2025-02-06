@@ -96,7 +96,7 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
   const outputs = useDeferredValue(transfer.outputs);
   const showTransferIds = useSelector(
     store,
-    (snapshot) => snapshot.context.settings.showTransferIds,
+    snapshot => snapshot.context.settings.showTransferIds,
   );
   const { y: scrollY } = useScroll(outputRef as React.RefObject<HTMLElement>);
 
@@ -104,10 +104,10 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
 
   const isScrolledToBottom = outputRef.current
     ? Math.abs(
-        outputRef.current.scrollHeight -
-          outputRef.current.clientHeight -
-          scrollY,
-      ) < 1
+      outputRef.current.scrollHeight
+      - outputRef.current.clientHeight
+      - scrollY,
+    ) < 1
     : true;
 
   const scrollToBottom = () => {
@@ -137,14 +137,13 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
                 <label className="block text-sm text-gray-500">Host</label>
                 <Combobox
                   className="w-full"
-                  onValueChange={(value) =>
+                  onValueChange={value =>
                     store.send({
                       type: "updateTransferSource",
                       id: transfer.id,
                       field: "host",
                       value,
-                    })
-                  }
+                    })}
                   options={hostOptions}
                   placeholder="Select or enter host..."
                   searchPlaceholder="Search hosts..."
@@ -195,14 +194,13 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
                 <label className="block text-sm text-gray-500">Host</label>
                 <Combobox
                   className="w-full"
-                  onValueChange={(value) =>
+                  onValueChange={value =>
                     store.send({
                       type: "updateTransferDestination",
                       id: transfer.id,
                       field: "host",
                       value,
-                    })
-                  }
+                    })}
                   options={hostOptions}
                   placeholder="Select or enter host..."
                   searchPlaceholder="Search hosts..."
@@ -246,8 +244,7 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
         <div className="flex gap-2 mb-4">
           <Button
             onClick={() =>
-              store.send({ type: "duplicateTransfer", id: transfer.id })
-            }
+              store.send({ type: "duplicateTransfer", id: transfer.id })}
             title="Duplicate transfer"
             variant="outline"
           >
@@ -256,8 +253,7 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
           </Button>
           <Button
             onClick={() =>
-              store.send({ type: "swapSourceAndDestination", id: transfer.id })
-            }
+              store.send({ type: "swapSourceAndDestination", id: transfer.id })}
             title="Swap source and destination"
             variant="outline"
           >
@@ -267,9 +263,11 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
         </div>
 
         <div className="flex gap-2">
-          {transfer.status === "syncing" ? (
-            <Loader2 className="size-6 my-1 animate-spin text-muted-foreground" />
-          ) : null}
+          {transfer.status === "syncing"
+            ? (
+                <Loader2 className="size-6 my-1 animate-spin text-muted-foreground" />
+              )
+            : null}
 
           {/* Progress bar for syncing state */}
           <div className="w-full mt-0.5 mb-4">
@@ -282,13 +280,18 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
               }
             />
             <p className="text-sm mt-1">
-              {transfer.error ? (
-                <span className="text-red-500">Error: {transfer.error}</span>
-              ) : (
-                <span className="text-muted-foreground">
-                  {transfer.progress?.message || "No progress to show"}
-                </span>
-              )}
+              {transfer.error
+                ? (
+                    <span className="text-red-500">
+                      Error:
+                      {transfer.error}
+                    </span>
+                  )
+                : (
+                    <span className="text-muted-foreground">
+                      {transfer.progress?.message || "No progress to show"}
+                    </span>
+                  )}
             </p>
           </div>
         </div>

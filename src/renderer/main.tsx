@@ -1,8 +1,8 @@
 import "./index.css";
 
+import * as Sentry from "@sentry/electron/renderer";
 import * as React from "react";
 import ReactDOM from "react-dom/client";
-import * as Sentry from "@sentry/electron/renderer";
 
 import { App } from "~/renderer/app.js";
 

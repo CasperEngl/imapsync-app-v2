@@ -1,13 +1,14 @@
-import * as Sentry from "@sentry/electron/main";
-import dayjs from "dayjs";
-import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
-import Store from "electron-store";
 import { spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
 import path from "node:path";
 
+import * as Sentry from "@sentry/electron/main";
+import dayjs from "dayjs";
+import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import Store from "electron-store";
+
 import type {
-  TransferState,  
+  TransferState,
   TransferWithState,
 } from "../src/renderer/schemas.js";
 
@@ -337,7 +338,6 @@ ipcMain.handle("start-transfer", async (event, transfer) => {
       });
     }
   } catch (error) {
-    console.log(error);
     event.sender.send("transfer-error", {
       id: transfer.id,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -396,8 +396,8 @@ ipcMain.handle("start-all-transfers", async (event, transfers: TransferWithState
           throw new Error("No window found for transfer");
         }
 
-        const success =await runImapsync(transfer, win);
-        
+        const success = await runImapsync(transfer, win);
+
         if (success) {
           win.webContents.send("transfer-complete", {
             id: transfer.id,
@@ -567,6 +567,7 @@ ipcMain.handle("set-concurrent-transfers", (_, value: number) => {
     throw new Error("Concurrent transfers must be a positive number");
   }
   store.set("concurrentTransfers", value);
+
   return value;
 });
 
@@ -577,7 +578,7 @@ ipcMain.handle("stop-transfer", async (event, transferId: string) => {
     try {
       process.kill();
       runningProcesses.delete(transferId);
-      
+
       // Notify renderer that transfer was stopped with a dedicated event
       const win = BrowserWindow.fromWebContents(event.sender);
       if (win) {
@@ -587,7 +588,7 @@ ipcMain.handle("stop-transfer", async (event, transferId: string) => {
       }
     } catch (error) {
       console.error(`Failed to stop transfer ${transferId}:`, error);
-      throw new Error(`Failed to stop transfer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to stop transfer: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }
 });

@@ -1,6 +1,5 @@
 import { createStoreWithProducer } from "@xstate/store";
 import { current, produce } from "immer";
-import { startTransition } from "react";
 
 import type {
   Transfer,

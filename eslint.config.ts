@@ -1,13 +1,6 @@
 import antfu from "@antfu/eslint-config";
-// @ts-expect-error - react-compiler is not typed
-import reactCompiler from "eslint-plugin-react-compiler"
 
 export default antfu({
-  plugins: [
-    "prettier",
-    reactCompiler,
-  ],
-  ignores: ["electron/**/*"],
   stylistic: {
     indent: 2,
     quotes: "double",
@@ -74,7 +67,7 @@ export default antfu({
       "ts/no-floating-promises": "error",
     },
     parserOptions: {
-      project: "./tsconfig.json",
+      project: ["./tsconfig.json", "./electron/tsconfig.json"],
     },
   },
 
@@ -85,102 +78,99 @@ export default antfu({
   },
   rules: {
     "antfu/if-newline": "off",
-    "react-compiler/react-compiler": "error",
   },
-})
-  .overrides({
-    "antfu/jsdoc/rules": {
-      rules: {
-        "jsdoc/check-param-names": "off",
-      },
+}).overrides({
+  "antfu/jsdoc/rules": {
+    rules: {
+      "jsdoc/check-param-names": "off",
     },
+  },
 
-    "antfu/react/rules": {
-      ignores: ["test/**"],
+  "antfu/react/rules": {
+    ignores: ["test/**"],
+  },
+
+  "antfu/node/rules": {
+    rules: {
+      "node/prefer-global/process": ["error", "always"],
+      "node/prefer-global/buffer": ["error", "always"],
     },
+  },
 
-    "antfu/node/rules": {
-      rules: {
-        "node/prefer-global/process": ["error", "always"],
-        "node/prefer-global/buffer": ["error", "always"],
-      },
-    },
-
-    "antfu/unicorn/rules": {
-      rules: {
-        "unicorn/import-style": [
-          "error",
-          {
-            styles: {
-              "react": {
-                named: true,
-                namespace: true,
-              },
-              "zod": {
-                named: true,
-              },
-              "lodash-es": {
-                named: true,
-              },
-              "date-fns": {
-                named: true,
-              },
-              "valibot": {
-                namespace: true,
-              },
+  "antfu/unicorn/rules": {
+    rules: {
+      "unicorn/import-style": [
+        "error",
+        {
+          styles: {
+            "react": {
+              named: true,
+              namespace: true,
+            },
+            "zod": {
+              named: true,
+            },
+            "lodash-es": {
+              named: true,
+            },
+            "date-fns": {
+              named: true,
+            },
+            "valibot": {
+              namespace: true,
             },
           },
-        ],
-      },
+        },
+      ],
     },
+  },
 
-    "antfu/perfectionist/setup": {
-      rules: {
-        "perfectionist/sort-jsx-props": [
-          "error",
-          {
-            type: "natural",
-            order: "asc",
-            ignoreCase: true,
-            ignorePattern: [],
-            groups: [],
-            customGroups: {},
-          },
-        ],
-        "perfectionist/sort-imports": [
-          "error",
-          {
-            groups: [
-              "side-effect",
-              "type",
-              ["builtin-type", "external-type"],
-              "builtin",
-              "external",
-              "internal-type",
-              "internal",
-              ["parent-type", "sibling-type", "index-type"],
-              ["parent", "sibling", "index"],
-              "object",
-              "unknown",
-            ],
-            newlinesBetween: "always",
-            order: "asc",
-            type: "natural",
-            ignoreCase: false,
-            sortSideEffects: true,
-            internalPattern: ["^@/.*", "^~/.*"],
-            customGroups: {
-              value: {
-                react: ["^react$", "^react-.*"],
-                style: ["\\.css$", "\\.scss$", "\\.less$", "\\.sass$"],
-              },
-              type: {
-                react: ["^react$", "^react-.*"],
-              },
+  "antfu/perfectionist/setup": {
+    rules: {
+      "perfectionist/sort-jsx-props": [
+        "error",
+        {
+          type: "natural",
+          order: "asc",
+          ignoreCase: true,
+          ignorePattern: [],
+          groups: [],
+          customGroups: {},
+        },
+      ],
+      "perfectionist/sort-imports": [
+        "error",
+        {
+          groups: [
+            "side-effect",
+            "type",
+            ["builtin-type", "external-type"],
+            "builtin",
+            "external",
+            "internal-type",
+            "internal",
+            ["parent-type", "sibling-type", "index-type"],
+            ["parent", "sibling", "index"],
+            "object",
+            "unknown",
+          ],
+          newlinesBetween: "always",
+          order: "asc",
+          type: "natural",
+          ignoreCase: false,
+          sortSideEffects: true,
+          internalPattern: ["^@/.*", "^~/.*"],
+          customGroups: {
+            value: {
+              react: ["^react$", "^react-.*"],
+              style: ["\\.css$", "\\.scss$", "\\.less$", "\\.sass$"],
+            },
+            type: {
+              react: ["^react$", "^react-.*"],
             },
           },
-        ],
-      },
+        },
+      ],
     },
-  })
-  .renamePlugins({});
+  },
+});

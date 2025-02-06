@@ -136,7 +136,8 @@
   textarea,
   [contenteditable="true"],
   code,
-  pre, pre * {
+  pre,
+  pre * {
     -webkit-user-select: text;
     user-select: text;
   }
