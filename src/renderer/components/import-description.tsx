@@ -9,11 +9,8 @@ export function ImportDescription({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <div className="text-xs text-muted-foreground">
-        ID:
-        {" "}
-        {transfer.id}
-      </div>
+      <div className="text-xs text-muted-foreground">ID</div>
+      <div className="font-medium">{transfer.id}</div>
       <div className="text-xs text-muted-foreground">Source</div>
       <div className="flex gap-1 items-center text-sm">
         <span className="font-medium">{transfer.source.user}</span>
