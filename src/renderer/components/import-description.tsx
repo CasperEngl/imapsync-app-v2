@@ -5,13 +5,15 @@ import type { Transfer } from "~/renderer/schemas.js";
 export function ImportDescription({
   transfer,
 }: {
-  transfer: {
-    source: Transfer;
-    destination: Transfer;
-  };
+  transfer: Transfer;
 }) {
   return (
     <div className="flex flex-col gap-1">
+      <div className="text-xs text-muted-foreground">
+        ID:
+        {" "}
+        {transfer.id}
+      </div>
       <div className="text-xs text-muted-foreground">Source</div>
       <div className="flex gap-1 items-center text-sm">
         <span className="font-medium">{transfer.source.user}</span>
