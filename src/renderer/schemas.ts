@@ -1,12 +1,17 @@
 import * as v from "valibot";
 
-export const Transfer = v.object({
+export const TransferEndpoint = v.object({
   host: v.string(),
   user: v.string(),
   password: v.string(),
-  port: v.optional(v.string()),
-  ssl: v.optional(v.boolean()),
-  tls: v.optional(v.boolean()),
+});
+
+export type TransferEndpoint = v.InferOutput<typeof TransferEndpoint>;
+
+export const Transfer = v.object({
+  id: v.string(),
+  source: TransferEndpoint,
+  destination: TransferEndpoint,
 });
 
 export type Transfer = v.InferOutput<typeof Transfer>;
@@ -17,6 +22,8 @@ export const TransferProgress = v.object({
   message: v.string(),
   progress: v.number(),
 });
+
+export type TransferProgress = v.InferOutput<typeof TransferProgress>;
 
 export const TransferStatus = v.picklist([
   "idle",
@@ -40,8 +47,7 @@ export type TransferState = v.InferOutput<typeof TransferState>;
 
 export const TransferWithState = v.object({
   ...TransferState.entries,
-  source: Transfer,
-  destination: Transfer,
+  ...Transfer.entries,
 });
 
 export type TransferWithState = v.InferOutput<typeof TransferWithState>;

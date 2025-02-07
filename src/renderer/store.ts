@@ -3,6 +3,8 @@ import { current, produce } from "immer";
 
 import type {
   Transfer,
+  TransferEndpoint,
+  TransferProgress,
   TransferState,
   TransferStatus,
   TransferWithState,
@@ -60,14 +62,7 @@ const storeContext: StoreContext = {
 export const store = createStoreWithProducer(produce, {
   context: storeContext,
   on: {
-    addTransfer: (
-      context,
-      event: Partial<TransferState> & {
-        id: string;
-        source: Transfer;
-        destination: Transfer;
-      },
-    ) => {
+    addTransfer: (context, event: Partial<TransferState> & Transfer) => {
       context.transfers.push({
         id: event.id,
         source: event.source,
@@ -119,7 +114,7 @@ export const store = createStoreWithProducer(produce, {
       context,
       event: {
         id: string;
-        field: keyof Transfer;
+        field: keyof TransferEndpoint;
         value: unknown;
       },
     ) => {
@@ -135,7 +130,7 @@ export const store = createStoreWithProducer(produce, {
       context,
       event: {
         id: string;
-        field: keyof Transfer;
+        field: keyof TransferEndpoint;
         value: unknown;
       },
     ) => {
@@ -204,12 +199,8 @@ export const store = createStoreWithProducer(produce, {
     },
     updateTransferProgress: (
       context,
-      event: {
+      event: TransferProgress & {
         id: string;
-        current: number;
-        total: number;
-        message: string;
-        progress: number;
       },
     ) => {
       const transfer = context.transfers.find(
