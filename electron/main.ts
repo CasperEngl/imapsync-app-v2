@@ -167,8 +167,10 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       logDir,
       "--logfile",
       `transfer_${dayjs().format("YYYY-MM-DD_HH-mm-ss")}_${transfer.id}_${
-        kebabCase(transfer.source.user)
-      }_to_${kebabCase(transfer.destination.user)}.log`,
+        kebabCase(transfer.source.user.split("@")[0])
+      }_to_${
+        kebabCase(transfer.destination.user.split("@")[0])
+      }.log`,
     ];
 
     const imapsync = spawn(imapsyncPath, args, {
