@@ -56,21 +56,23 @@ const store = new Store<{
 async function getLogDirectory(): Promise<string> {
   const defaultPath = path.join(app.getPath("userData"), "LOG_imapsync");
   const storedPath = store.get("logDirectory");
-
-  const exists = await fs
-    .access(defaultPath ?? storedPath)
-    .then(() => true)
-    .catch(() => false);
+  const logDir = storedPath || defaultPath;
+  const exists = await fs.access(logDir).then(() => true).catch(() => false);
 
   if (!exists) {
-    await fs.mkdir(defaultPath ?? storedPath, {
-      recursive: true,
-    });
+    await fs.mkdir(logDir, { recursive: true });
   }
 
-  if (storedPath) return storedPath;
+  await fs
+    .access(logDir, fs.constants.W_OK)
+    .then(() => true)
+    .catch((error) => {
+      throw new Error(`No write permissions for log directory: ${logDir}`, {
+        cause: error,
+      });
+    });
 
-  return defaultPath;
+  return logDir;
 }
 
 async function createWindow() {
