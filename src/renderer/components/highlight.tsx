@@ -5,13 +5,18 @@ import * as React from "react";
 import { cn } from "~/renderer/lib/utils.js";
 
 export interface HighlightRef {
-  scrollIntoView: (
+  highlight: (
     args?: ScrollIntoViewOptions & {
       /**
        * Duration in milliseconds before the highlight is removed.
        * @default 2500
        */
       highlightDuration?: number;
+      /**
+       * Scroll into view while highlighting.
+       * @default false
+       */
+      scrollTo?: boolean;
     },
   ) => void;
 }
@@ -19,14 +24,12 @@ export interface HighlightRef {
 interface HighlightProps {
   children: React.ReactNode;
   className?: string;
-  scrollTo?: boolean;
   ref: React.Ref<HighlightRef>;
 }
 
 export function Highlight({
   children,
   className,
-  scrollTo = false,
   ref,
 }: HighlightProps) {
   const [isHighlighted, setIsHighlighted] = React.useState(false);
@@ -35,25 +38,27 @@ export function Highlight({
   React.useImperativeHandle(
     ref,
     () => ({
-      scrollIntoView: (args) => {
-        const { highlightDuration: delay, ...rest } = args ?? {};
+      highlight: (args) => {
+        const { highlightDuration: delay = 2500, ...rest } = args ?? {};
 
         if (!elementRef.current) return;
 
         elementRef.current.style.setProperty(
           "--delay",
-          delay?.toString() ?? "2500",
+          delay.toString(),
         );
 
         setIsHighlighted(true);
 
         // Scroll into view if scrollTo is true
-        if (scrollTo) {
-          elementRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            ...rest,
-          });
+        if (args?.scrollTo) {
+          setTimeout(() => {
+            elementRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              ...rest,
+            });
+          }, 100);
         }
 
         setTimeout(() => {
@@ -62,10 +67,10 @@ export function Highlight({
           elementRef.current.style.removeProperty("--delay");
 
           setIsHighlighted(false);
-        }, delay ?? 2500);
+        }, delay);
       },
     }),
-    [scrollTo],
+    [],
   );
 
   return (

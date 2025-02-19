@@ -237,7 +237,13 @@ export function App() {
   };
 
   const highlightTransfer = (id: string) => {
-    transferRefs.current.get(id)?.scrollIntoView({ highlightDuration: 1500 });
+    const transfer = transferRefs.current.get(id);
+    if (!transfer) return;
+
+    transfer.highlight({
+      scrollTo: true,
+      highlightDuration: 1500,
+    });
   };
 
   const appBarHeightStyle = useMemo(() => {
@@ -601,7 +607,6 @@ export function App() {
                                 transferRefs.current.delete(transfer.id);
                               }
                             }}
-                            scrollTo
                           >
                             <TransferItem
                               hostOptions={hostOptions}
