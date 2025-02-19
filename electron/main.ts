@@ -6,6 +6,7 @@ import * as Sentry from "@sentry/electron/main";
 import dayjs from "dayjs";
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import Store from "electron-store";
+import { kebabCase } from "lodash-es";
 
 import type {
   TransferState,
@@ -166,8 +167,8 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       logDir,
       "--logfile",
       `transfer_${dayjs().format("YYYY-MM-DD_HH-mm-ss")}_${transfer.id}_${
-        transfer.source.user
-      }_to_${transfer.destination.user}.log`,
+        kebabCase(transfer.source.user)
+      }_to_${kebabCase(transfer.destination.user)}.log`,
     ];
 
     const imapsync = spawn(imapsyncPath, args, {
