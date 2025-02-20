@@ -10,6 +10,7 @@ import type {
   TransferWithState,
 } from "~/renderer/schemas.js";
 
+import { loadPersistedState, persistState } from "~/renderer/persist-state.js";
 import { idGenerator } from "~/renderer/utils/id.js";
 
 export interface StoreContext {
@@ -19,29 +20,6 @@ export interface StoreContext {
     replaceAllOnImport: boolean;
     exportWithState: boolean;
   };
-}
-
-const STORAGE_KEY = "imapsync-store";
-
-function loadPersistedState(): Partial<StoreContext> {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error("[Store] Failed to load persisted state:", error);
-  }
-
-  return {};
-}
-
-function persistState(state: StoreContext) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (error) {
-    console.error("[Store] Failed to persist state:", error);
-  }
 }
 
 const persistedState = loadPersistedState();

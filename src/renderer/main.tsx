@@ -4,7 +4,8 @@ import * as Sentry from "@sentry/electron/renderer";
 import * as React from "react";
 import ReactDOM from "react-dom/client";
 
-import { App } from "~/renderer/app.js";
+import { AppRoot } from "~/renderer/app-root.js";
+import { Providers } from "~/renderer/providers.js";
 
 // Initialize Sentry in renderer process
 Sentry.init({
@@ -27,6 +28,8 @@ if (!rootElement) throw new Error("Failed to find the root element");
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <App />
+    <Providers>
+      <AppRoot />
+    </Providers>
   </React.StrictMode>,
 );
