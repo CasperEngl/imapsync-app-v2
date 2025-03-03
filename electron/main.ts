@@ -133,7 +133,7 @@ function getImapsyncPath(): string {
   if (process.platform === "win32") {
     binaryName = "imapsync.exe";
   } else if (process.platform === "darwin") {
-    // binaryName = "imapsync_mac";
+    binaryName = "imapsync_mac";
   }
 
   return path.join(binDir, binaryName);
