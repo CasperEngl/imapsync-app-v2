@@ -137,7 +137,6 @@ dist
 
 # Imapsync
 LOG_imapsync
-resources/bin/imapsync
 
 # Electron
 release/

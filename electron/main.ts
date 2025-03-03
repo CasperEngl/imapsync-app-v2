@@ -421,30 +421,6 @@ ipcMain.handle(
   },
 );
 
-ipcMain.handle("select-imapsync-binary", async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ["openFile"],
-    filters: [{ name: "Executables", extensions: ["*"] }],
-    title: "Select imapsync binary",
-  });
-
-  if (result.canceled || !result.filePaths[0]) {
-    return null;
-  }
-
-  // Make it executable
-  await fs.chmod(result.filePaths[0], "755");
-
-  store.set("imapsyncPath", result.filePaths[0]);
-
-  return result.filePaths[0];
-});
-
-// Add a handler to get the current path
-ipcMain.handle("get-imapsync-path", () => {
-  return getImapsyncPath();
-});
-
 ipcMain.handle("select-log-directory", async () => {
   const result = await dialog.showOpenDialog({
     properties: ["openDirectory", "createDirectory"],

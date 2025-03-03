@@ -37,8 +37,6 @@ contextBridge.exposeInMainWorld("api", {
       ipcRenderer.removeListener("transfer-output", callback);
     };
   },
-  selectImapsyncBinary: () => ipcRenderer.invoke("select-imapsync-binary"),
-  getImapsyncPath: () => ipcRenderer.invoke("get-imapsync-path"),
   selectLogDirectory: () => ipcRenderer.invoke("select-log-directory"),
   getLogDirectory: () => ipcRenderer.invoke("get-log-directory"),
   getConcurrentTransfers: () => ipcRenderer.invoke("get-concurrent-transfers"),

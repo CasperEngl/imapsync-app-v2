@@ -38,8 +38,6 @@ export interface IpcApi {
   onTransferStop: (
     callback: (event: unknown, data: Pick<TransferData, "id">) => void,
   ) => void;
-  selectImapsyncBinary: () => Promise<string>;
-  getImapsyncPath: () => Promise<string>;
   selectLogDirectory: () => Promise<string>;
   getLogDirectory: () => Promise<string>;
   getConcurrentTransfers: () => Promise<number>;

@@ -16,7 +16,6 @@ import { Skeleton } from "~/renderer/components/ui/skeleton.js";
 
 export function SettingsCard() {
   const logDirInputId = useId();
-  const imapsyncInputId = useId();
   const concurrentTransfersId = useId();
   const queryClient = useQueryClient();
 
@@ -24,12 +23,6 @@ export function SettingsCard() {
   const logDirectoryQuery = useQuery({
     queryKey: ["logDirectory"],
     queryFn: () => window.api.getLogDirectory(),
-  });
-
-  // Query for fetching imapsync path
-  const imapsyncPathQuery = useQuery({
-    queryKey: ["imapsyncPath"],
-    queryFn: () => window.api.getImapsyncPath(),
   });
 
   // Query for fetching concurrent transfers
@@ -45,21 +38,6 @@ export function SettingsCard() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["logDirectory"] });
-    },
-  });
-
-  // Mutation for selecting imapsync binary
-  const selectBinaryMutation = useMutation({
-    mutationFn: async () => {
-      await window.api.selectImapsyncBinary();
-    },
-    onError: (error: unknown) => {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to upload binary",
-      );
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ["imapsyncPath"] });
     },
   });
 
@@ -82,10 +60,6 @@ export function SettingsCard() {
 
   const handleSelectDirectory = async () => {
     updateDirectoryMutation.mutate();
-  };
-
-  const handleSelectBinary = () => {
-    selectBinaryMutation.mutate();
   };
 
   const handleConcurrentTransfersChange = (
@@ -125,38 +99,6 @@ export function SettingsCard() {
               Browse
             </Button>
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor={imapsyncInputId}>imapsync Binary</Label>
-          <div className="mt-1 flex items-center space-x-2">
-            {imapsyncPathQuery.isLoading
-              ? (
-                  <Skeleton className="h-9 flex-1" />
-                )
-              : (
-                  <Input
-                    className="text-sm break-all flex-1"
-                    id={imapsyncInputId}
-                    readOnly
-                    type="text"
-                    value={imapsyncPathQuery.data ?? ""}
-                  />
-                )}
-            <Button
-              disabled={selectBinaryMutation.isPending}
-              onClick={handleSelectBinary}
-            >
-              {selectBinaryMutation.isPending ? "Uploading..." : "Browse"}
-            </Button>
-          </div>
-          {selectBinaryMutation.isError && (
-            <div className="text-red-500 mt-2">
-              {selectBinaryMutation.error instanceof Error
-                ? selectBinaryMutation.error.message
-                : "Failed to upload binary"}
-            </div>
-          )}
         </div>
 
         <div>
