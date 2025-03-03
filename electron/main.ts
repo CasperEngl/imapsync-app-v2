@@ -133,7 +133,12 @@ function getImapsyncPath(): string {
   if (process.platform === "win32") {
     binaryName = "imapsync.exe";
   } else if (process.platform === "darwin") {
-    binaryName = "imapsync_mac";
+    // Check if running on ARM64 (Apple Silicon)
+    if (process.arch === "arm64") {
+      binaryName = "imapsync_mac_arm64";
+    } else {
+      binaryName = "imapsync_mac";
+    }
   }
 
   return path.join(binDir, binaryName);
@@ -173,10 +178,21 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       }.log`,
     ];
 
-    const imapsync = spawn(imapsyncPath, args, {
-      detached: false, // Change to false since we're managing the process lifecycle
-      stdio: "pipe",
-    });
+    let imapsync;
+
+    if (process.platform === "darwin") {
+      // On macOS, use perl to execute the imapsync script
+      imapsync = spawn("perl", [imapsyncPath, ...args], {
+        detached: false,
+        stdio: "pipe",
+      });
+    } else {
+      // On other platforms, execute the binary directly
+      imapsync = spawn(imapsyncPath, args, {
+        detached: false,
+        stdio: "pipe",
+      });
+    }
 
     // Track the process
     runningProcesses.set(transfer.id, imapsync);
