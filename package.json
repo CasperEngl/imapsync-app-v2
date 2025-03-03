@@ -107,6 +107,13 @@
     "extraMetadata": {
       "name": "Imapsync App"
     },
+    "extraResources": [
+      {
+        "from": "resources/bin",
+        "to": "bin",
+        "filter": ["**/*"]
+      }
+    ],
     "icon": "assets/icon.png",
     "publish": {
       "provider": "github",
