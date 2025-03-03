@@ -19,7 +19,6 @@ export type Transfer = v.InferOutput<typeof Transfer>;
 export const TransferProgress = v.object({
   current: v.number(),
   total: v.number(),
-  message: v.string(),
   progress: v.number(),
 });
 

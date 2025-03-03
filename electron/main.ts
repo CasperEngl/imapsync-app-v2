@@ -184,7 +184,7 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     // Define progress tracking variables outside the listener
     let totalProgress = 0;
     let messageCount = 0;
-    let currentFolder = "";
+    let _currentFolder = "";
 
     imapsync.stdout.setEncoding("utf8");
 
@@ -207,12 +207,11 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         // Track folder changes
         const folderMatch = line.match(/Host\d: Folder \[(.*?)\]/);
         if (folderMatch) {
-          currentFolder = folderMatch[1];
+          _currentFolder = folderMatch[1];
           win.webContents.send("transfer-progress", {
             id: transfer.id,
             current: messageCount,
             total: totalProgress,
-            message: `Processing folder: ${currentFolder}`,
             progress:
               totalProgress > 0
                 ? Math.round((messageCount / totalProgress) * 100)
@@ -230,7 +229,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
             id: transfer.id,
             current: 0,
             total: totalFolders,
-            message: `Found ${totalFolders} folders to process`,
             progress: 0,
           });
         }
@@ -246,7 +244,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
             id: transfer.id,
             current: 0,
             total: totalMessages,
-            message: `Found ${totalMessages} messages to transfer`,
             progress: 0,
           });
         }
@@ -266,9 +263,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
               id: transfer.id,
               current: messageCount,
               total: totalProgress,
-              message: currentFolder
-                ? `Transferring emails (${currentFolder}): ${messageCount} / ${totalProgress}`
-                : `Transferring emails: ${messageCount} / ${totalProgress}`,
               progress,
             });
           }
@@ -280,7 +274,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
             id: transfer.id,
             current: 0,
             total: totalProgress,
-            message: "Connecting to source server",
             progress: 0,
           });
         } else if (line.includes("Connection on host2")) {
@@ -288,7 +281,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
             id: transfer.id,
             current: 0,
             total: totalProgress,
-            message: "Connecting to destination server",
             progress: 0,
           });
         }
@@ -299,7 +291,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
             id: transfer.id,
             current: totalProgress,
             total: totalProgress,
-            message: "Transfer complete",
             progress: 100,
           });
         }

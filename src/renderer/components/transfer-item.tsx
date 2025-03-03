@@ -94,6 +94,16 @@ interface TransferItemProps {
 export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
   const outputRef = useRef<HTMLPreElement>(null);
   const outputs = useDeferredValue(transfer.outputs);
+  const lastOutput = outputs
+    .split("\n")
+    .filter(line => line.trim())
+    .pop();
+  const transferTime = outputs
+    .split("\n")
+    .filter(line => line.trim())
+    .find(line => line.includes("Transfer time"))
+    ?.split(":")[1]
+    ?.trim();
   const showTransferIds = useSelector(
     store,
     snapshot => snapshot.context.settings.showTransferIds,
@@ -287,11 +297,29 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
                       {transfer.error}
                     </span>
                   )
-                : (
-                    <span className="text-muted-foreground">
-                      {transfer.progress?.message || "No progress to show"}
-                    </span>
-                  )}
+                : transfer.status === "syncing"
+                  ? (
+                      <span className="text-muted-foreground">
+                        {lastOutput || "Starting transfer..."}
+                      </span>
+                    )
+                  : transfer.status === "completed"
+                    ? (
+                        <span className="text-muted-foreground">
+                          {transferTime
+                            ? (
+                                <>
+                                  Transfer time:
+                                  {" "}
+                                  {transferTime}
+                                </>
+                              )
+                            : (
+                                "No transfer time"
+                              )}
+                        </span>
+                      )
+                    : null}
             </p>
           </div>
         </div>
