@@ -44,12 +44,10 @@ app.on("before-quit", () => {
 
 const store = new Store<{
   logDirectory: string | null;
-  imapsyncPath: string | null;
   concurrentTransfers: number;
 }>({
   defaults: {
     logDirectory: null,
-    imapsyncPath: null,
     concurrentTransfers: 3,
   },
 });
@@ -129,14 +127,16 @@ function getImapsyncBinaryDir(): string {
 }
 
 function getImapsyncPath(): string {
-  const storedPath = store.get("imapsyncPath", "");
+  const binDir = getImapsyncBinaryDir();
+  let binaryName = "imapsync";
 
-  if (storedPath) {
-    return storedPath;
+  if (process.platform === "win32") {
+    binaryName = "imapsync.exe";
+  } else if (process.platform === "darwin") {
+    // binaryName = "imapsync_mac";
   }
 
-  // Fall back to default location
-  return path.join(getImapsyncBinaryDir(), "imapsync");
+  return path.join(binDir, binaryName);
 }
 
 async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
