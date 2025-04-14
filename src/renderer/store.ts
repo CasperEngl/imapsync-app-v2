@@ -20,6 +20,7 @@ export interface StoreContext {
     replaceAllOnImport: boolean;
     exportWithState: boolean;
   };
+  newTransferExtraArgs: string;
 }
 
 const persistedState = loadPersistedState();
@@ -35,6 +36,7 @@ const storeContext: StoreContext = {
     replaceAllOnImport: false,
     exportWithState: true,
   },
+  newTransferExtraArgs: persistedState.newTransferExtraArgs ?? "",
 };
 
 export const store = createStoreWithProducer(produce, {
@@ -45,6 +47,7 @@ export const store = createStoreWithProducer(produce, {
         id: event.id,
         source: event.source,
         destination: event.destination,
+        extraArgs: event.extraArgs ?? "",
         status: event.status || ("idle" as const),
         createdAt: event.createdAt || Date.now(),
         outputs: event.outputs || "",
@@ -218,6 +221,7 @@ export const store = createStoreWithProducer(produce, {
       context.transfers.push({
         source: transfer.source,
         destination: transfer.destination,
+        extraArgs: transfer.extraArgs,
         id: idGenerator(),
         status: "idle" as const,
         createdAt: Date.now(),
@@ -278,6 +282,23 @@ export const store = createStoreWithProducer(produce, {
       if (transfer) {
         transfer.status = "idle";
       }
+    },
+    updateTransferExtraArgs: (
+      context,
+      event: {
+        id: string;
+        value: string;
+      },
+    ) => {
+      const transfer = context.transfers.find(
+        transfer => transfer.id === event.id,
+      );
+      if (transfer) {
+        transfer.extraArgs = event.value;
+      }
+    },
+    updateNewTransferExtraArgs: (context, event: { value: string }) => {
+      context.newTransferExtraArgs = event.value;
     },
   },
 });

@@ -12,6 +12,7 @@ export const Transfer = v.object({
   id: v.string(),
   source: TransferEndpoint,
   destination: TransferEndpoint,
+  extraArgs: v.optional(v.string(), ""),
 });
 
 export type Transfer = v.InferOutput<typeof Transfer>;

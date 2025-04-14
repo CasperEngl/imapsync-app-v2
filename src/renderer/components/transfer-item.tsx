@@ -20,6 +20,7 @@ import type { TransferStatus, TransferWithState } from "~/renderer/schemas.js";
 import { Combobox } from "~/renderer/components/combobox.js";
 import { Button } from "~/renderer/components/ui/button.js";
 import { Input } from "~/renderer/components/ui/input.js";
+import { Label } from "~/renderer/components/ui/label.js";
 import { Progress } from "~/renderer/components/ui/progress.js";
 import { cn } from "~/renderer/lib/utils.js";
 import { store } from "~/renderer/store.js";
@@ -250,6 +251,29 @@ export function TransferItem({ transfer, hostOptions }: TransferItemProps) {
             </div>
           </div>
         </div>
+
+        {/* Added Extra Args Input */}
+        <div className="mb-4">
+          <Label className="block text-sm text-gray-500">
+            Extra imapsync Arguments
+          </Label>
+          <Input
+            onChange={(event) => {
+              store.send({
+                type: "updateTransferExtraArgs",
+                id: transfer.id,
+                value: event.target.value,
+              });
+            }}
+            placeholder="e.g., --noauthmd5 --timeout_connect=60"
+            type="text"
+            value={transfer.extraArgs}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Optional arguments passed directly to the imapsync command.
+          </p>
+        </div>
+        {/* End Added Extra Args Input */}
 
         <div className="flex gap-2 mb-4">
           <Button
