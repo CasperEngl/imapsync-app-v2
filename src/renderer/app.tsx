@@ -67,6 +67,10 @@ export function App({ appBarMeasure }: AppProps) {
     snapshot => snapshot.context.transfers,
   );
   const settings = useSelector(store, snapshot => snapshot.context.settings);
+  const newTransferExtraArgs = useSelector(
+    store,
+    snapshot => snapshot.context.newTransferExtraArgs,
+  );
   const keyedTransfers = groupBy(transfers, "status");
 
   const isSyncing = transfers.some((transfer) => {
@@ -127,8 +131,8 @@ export function App({ appBarMeasure }: AppProps) {
       id,
       source: newTransfer.source,
       destination: newTransfer.destination,
+      extraArgs: newTransferExtraArgs,
     });
-    // Reset form
     setNewTransfer({
       source: { host: "", user: "", password: "" },
       destination: { host: "", user: "", password: "" },
@@ -450,6 +454,25 @@ export function App({ appBarMeasure }: AppProps) {
                       type="password"
                       value={newTransfer.destination.password}
                     />
+                  </div>
+                  <div>
+                    <Label className="block text-sm text-gray-500">
+                      Extra imapsync Arguments
+                    </Label>
+                    <Input
+                      onChange={(event) => {
+                        store.send({
+                          type: "updateNewTransferExtraArgs",
+                          value: event.target.value,
+                        });
+                      }}
+                      placeholder="e.g., --noauthmd5 --timeout_connect=60"
+                      type="text"
+                      value={newTransferExtraArgs}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Optional arguments passed directly to the imapsync command.
+                    </p>
                   </div>
                 </div>
               </div>

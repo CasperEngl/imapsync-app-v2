@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import Store from "electron-store";
 import { kebabCase } from "lodash-es";
+import { parse } from "shell-quote";
 
 import type {
   TransferState,
@@ -19,17 +20,13 @@ Sentry.init({
 
 Store.initRenderer();
 
-// Track all running processes
 const runningProcesses = new Map<string, ReturnType<typeof spawn>>();
 
-// Add cleanup handler for app quit
 app.on("before-quit", () => {
-  // Gracefully terminate all running processes
   for (const [id, process] of runningProcesses.entries()) {
     try {
       process.kill();
       runningProcesses.delete(id);
-      // Notify renderer that transfer is no longer running
       BrowserWindow.getAllWindows().forEach((win) => {
         win.webContents.send("transfer-error", {
           id,
@@ -105,7 +102,6 @@ void app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  // Clean up any running processes when all windows are closed
   for (const [id, process] of runningProcesses.entries()) {
     try {
       process.kill();
@@ -133,7 +129,6 @@ function getImapsyncPath(): string {
   if (process.platform === "win32") {
     binaryName = "imapsync.exe";
   } else if (process.platform === "darwin") {
-    // Check if running on ARM64 (Apple Silicon)
     if (process.arch === "arm64") {
       binaryName = "imapsync_mac_arm64";
     } else {
@@ -178,26 +173,38 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
       }.log`,
     ];
 
+    if (transfer.extraArgs) {
+      try {
+        const extraArgsParsed = parse(transfer.extraArgs);
+        args.push(...extraArgsParsed.map(String));
+      } catch (e) {
+        console.error("Failed to parse extra arguments:", e);
+        win.webContents.send("transfer-error", {
+          id: transfer.id,
+          error: `Failed to parse extra arguments: ${transfer.extraArgs}`,
+        });
+        reject(new Error(`Failed to parse extra arguments: ${transfer.extraArgs}`));
+
+        return;
+      }
+    }
+
     let imapsync;
 
     if (process.platform === "darwin") {
-      // On macOS, use perl to execute the imapsync script
       imapsync = spawn("perl", [imapsyncPath, ...args], {
         detached: false,
         stdio: "pipe",
       });
     } else {
-      // On other platforms, execute the binary directly
       imapsync = spawn(imapsyncPath, args, {
         detached: false,
         stdio: "pipe",
       });
     }
 
-    // Track the process
     runningProcesses.set(transfer.id, imapsync);
 
-    // Define progress tracking variables outside the listener
     let totalProgress = 0;
     let messageCount = 0;
     let _currentFolder = "";
@@ -207,7 +214,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     imapsync.stdout.on("data", (data) => {
       let output = data.toString();
 
-      // Send raw output to frontend
       win.webContents.send("transfer-output", {
         id: transfer.id,
         content: output,
@@ -220,7 +226,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
         const line = output.slice(0, newlineIndex);
         output = output.slice(newlineIndex + 1);
 
-        // Track folder changes
         const folderMatch = line.match(/Host\d: Folder \[(.*?)\]/);
         if (folderMatch) {
           _currentFolder = folderMatch[1];
@@ -235,7 +240,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
           });
         }
 
-        // Track total folders
         const folderCountMatch = line.match(
           /Host1 Nb folders:\s+(\d+) folders/,
         );
@@ -249,13 +253,12 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
           });
         }
 
-        // Track total messages
         const messageCountMatch = line.match(
           /Host1 Nb messages:\s+(\d+) messages/,
         );
         if (messageCountMatch) {
           const totalMessages = Number.parseInt(messageCountMatch[1], 10);
-          totalProgress = totalMessages; // Update the existing totalProgress variable
+          totalProgress = totalMessages;
           win.webContents.send("transfer-progress", {
             id: transfer.id,
             current: 0,
@@ -264,7 +267,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
           });
         }
 
-        // Track individual message transfers
         const messageProgressMatch = line.match(/(\d+)\/(\d+) msgs left/);
         if (messageProgressMatch) {
           const [, remainingStr, totalStr] = messageProgressMatch;
@@ -284,7 +286,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
           }
         }
 
-        // Track connection stages
         if (line.includes("Connection on host1")) {
           win.webContents.send("transfer-progress", {
             id: transfer.id,
@@ -301,7 +302,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
           });
         }
 
-        // Track completion
         if (line.includes("Exiting with return value 0")) {
           win.webContents.send("transfer-progress", {
             id: transfer.id,
@@ -314,7 +314,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     });
 
     imapsync.stderr.on("data", (data) => {
-      // Send stderr output to frontend as well
       win.webContents.send("transfer-output", {
         id: transfer.id,
         content: data.toString(),
@@ -326,7 +325,6 @@ async function runImapsync(transfer: TransferWithState, win: BrowserWindow) {
     });
 
     imapsync.on("close", (code) => {
-      // Remove from tracking on process end
       runningProcesses.delete(transfer.id);
       if (code === 0) {
         resolve(true);
@@ -468,7 +466,6 @@ ipcMain.handle(
       if (!filePath) return { success: false };
 
       if (exportAs === "json") {
-        // If withState is false, strip out the state properties
         const dataToExport = withState
           ? transfers
           : transfers.map(({ source, destination }) => ({
@@ -477,7 +474,6 @@ ipcMain.handle(
             }));
         await fs.writeFile(filePath, JSON.stringify(dataToExport, null, 2));
       } else {
-        // Convert transfers to CSV format
         const headers = [
           "Source Host",
           "Source User",
@@ -532,12 +528,10 @@ ipcMain.handle(
   },
 );
 
-// Add this with the other ipcMain handlers
 ipcMain.handle("open-external-url", async (_, url: string) => {
   return shell.openExternal(url);
 });
 
-// Add handler for removing transfers
 ipcMain.handle("remove-transfer", async (_, transferId: string) => {
   const process = runningProcesses.get(transferId);
   if (process) {
@@ -553,7 +547,6 @@ ipcMain.handle("remove-transfer", async (_, transferId: string) => {
   runningProcesses.delete(transferId);
 });
 
-// Add handlers for concurrent transfers setting
 ipcMain.handle("get-concurrent-transfers", () => {
   return store.get("concurrentTransfers");
 });
@@ -567,15 +560,12 @@ ipcMain.handle("set-concurrent-transfers", (_, value: number) => {
   return value;
 });
 
-// Add this with the other ipcMain handlers
 ipcMain.handle("stop-transfer", async (event, transferId: string) => {
   const process = runningProcesses.get(transferId);
   if (process) {
     try {
       process.kill();
       runningProcesses.delete(transferId);
-
-      // Notify renderer that transfer was stopped with a dedicated event
       const win = BrowserWindow.fromWebContents(event.sender);
       if (win) {
         win.webContents.send("transfer-stop", {
