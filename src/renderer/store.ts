@@ -67,7 +67,6 @@ export const store = createStoreWithProducer(produce, {
           transfer.progress = {
             current: 0,
             total: 100,
-            message: "Starting transfer...",
             progress: 0,
           };
         }
@@ -143,7 +142,6 @@ export const store = createStoreWithProducer(produce, {
       transfer.progress = {
         current: 0,
         total: 100,
-        message: "Starting transfer...",
         progress: 0,
       };
     },
@@ -188,7 +186,6 @@ export const store = createStoreWithProducer(produce, {
         transfer.progress = {
           current: event.current,
           total: event.total,
-          message: event.message,
           progress: event.progress,
         };
       }
@@ -280,10 +277,6 @@ export const store = createStoreWithProducer(produce, {
       );
       if (transfer) {
         transfer.status = "idle";
-        if (transfer.progress) {
-          transfer.progress.message
-            = "Transfer stopped by user. Sync is incomplete.";
-        }
       }
     },
   },
@@ -295,25 +288,24 @@ store.subscribe((state) => {
 });
 
 // Setup IPC listeners
-window.api.onTransferProgress((event, data) => {
+window.api.onTransferProgress((_event, data) => {
   store.send({
     type: "updateTransferProgress",
     id: data.id,
     current: data.current,
     total: data.total,
-    message: data.message,
     progress: data.progress,
   });
 });
 
-window.api.onTransferComplete((event, data) => {
+window.api.onTransferComplete((_event, data) => {
   store.send({
     type: "completeTransfer",
     id: data.id,
   });
 });
 
-window.api.onTransferError((event, data) => {
+window.api.onTransferError((_event, data) => {
   console.error("[Store] Transfer error:", data);
   store.send({
     type: "transferError",
@@ -322,7 +314,7 @@ window.api.onTransferError((event, data) => {
   });
 });
 
-window.api.onTransferOutput((event, data) => {
+window.api.onTransferOutput((_event, data) => {
   store.send({
     type: "addTransferOutput",
     id: data.id,
@@ -331,7 +323,7 @@ window.api.onTransferOutput((event, data) => {
 });
 
 // Add the stop transfer listener
-window.api.onTransferStop((event, data) => {
+window.api.onTransferStop((_event, data) => {
   store.send({
     type: "stopTransfer",
     id: data.id,
